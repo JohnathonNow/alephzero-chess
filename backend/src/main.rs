@@ -8,6 +8,5 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let x = BigInt::from_str("1234543234343434")?;
     println!("{:?}", x);
     let b = board::Board::new();
-    println!("{}", b);
     Ok(())
 }

@@ -1,6 +1,28 @@
-use std::fmt;
+use std::{collections::HashMap, fmt};
 
 use num_bigint::BigInt;
+
+use crate::board::Board;
+#[derive(Clone, Copy)]
+pub struct PieceType {
+    _can_move: fn(&Board, &Piece, &BigInt, &BigInt) -> bool,
+}
+
+impl PieceType {
+    fn can_move(&self, board: &Board, piece: &Piece, to_rank: &BigInt, to_file: &BigInt) -> bool {
+        (self._can_move)(board, piece, to_rank, to_file)
+    }
+}
+
+#[derive(Clone)]
+struct PieceManager {
+    map: HashMap<String, PieceType>,
+}
+
+impl PieceManager {
+    fn new(map: HashMap<String, PieceType>) -> Self { Self { map } }
+}
+
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum Color {
@@ -16,79 +38,38 @@ impl Color {
         }
     }
 }
-#[derive(Clone, Copy)]
-
-pub enum PieceType {
-    Pawn(Color),
-    Knight(Color),
-    Bishop(Color),
-    Rook(Color),
-    Queen(Color),
-    King(Color),
-}
-
-impl PieceType {
-    pub fn get_color(&self) -> Color {
-        match self {
-            PieceType::Pawn(c) => *c,
-            PieceType::Knight(c) => *c,
-            PieceType::Bishop(c) => *c,
-            PieceType::Rook(c) => *c,
-            PieceType::Queen(c) => *c,
-            PieceType::King(c) => *c,
-        }
-    }
-    pub fn flip(&self) -> Self {
-        match self {
-            PieceType::Pawn(c) => PieceType::Pawn(c.flip()),
-            PieceType::Knight(c) => PieceType::Knight(c.flip()),
-            PieceType::Bishop(c) => PieceType::Bishop(c.flip()),
-            PieceType::Rook(c) => PieceType::Rook(c.flip()),
-            PieceType::Queen(c) => PieceType::Queen(c.flip()),
-            PieceType::King(c) => PieceType::King(c.flip()),
-        }
-    }
-    pub fn symbol(&self) -> &str {
-        match self {
-            PieceType::Pawn(Color::White) => "P",
-            PieceType::Pawn(Color::Black) => "p",
-            PieceType::Knight(Color::White) => "N",
-            PieceType::Knight(Color::Black) => "n",
-            PieceType::Bishop(Color::White) => "B",
-            PieceType::Bishop(Color::Black) => "b",
-            PieceType::Rook(Color::White) => "R",
-            PieceType::Rook(Color::Black) => "r",
-            PieceType::Queen(Color::White) => "Q",
-            PieceType::Queen(Color::Black) => "q",
-            PieceType::King(Color::White) => "K",
-            PieceType::King(Color::Black) => "k",
-        }
-    }
-}
-
-impl fmt::Display for PieceType {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.symbol())
-    }
-}
 
 #[derive(Clone)]
 pub struct Piece {
-    pub piece: PieceType,
-    pub rank: BigInt,
-    pub file: BigInt,
-    pub captured: bool,
-    pub has_moved: bool,
+    piece: PieceType,
+    rank: BigInt,
+    file: BigInt,
+    captured: bool,
+    has_moved: bool,
+    color: Color,
 }
 
 impl Piece {
-    pub fn new(piece: PieceType, rank: BigInt, file: BigInt) -> Self {
+    pub fn new(piece: PieceType, color: Color, rank: BigInt, file: BigInt) -> Self {
         Self {
             piece,
+            color,
             rank,
             file,
             captured: false,
             has_moved: false,
         }
+    }
+    pub fn can_move(&self, board: &Board, to_rank: &BigInt, to_file: &BigInt) -> bool {
+        self.piece.can_move(board, self, to_rank, to_file)
+    }
+    pub fn get_color(&self) -> Color {
+        self.color
+    }
+    pub fn get_rank(&self) -> &BigInt {
+        &self.rank
+    }
+    pub fn get_file(&self) -> &BigInt {
+        &self.file
     }
 }
