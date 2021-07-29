@@ -3,7 +3,7 @@ use std::fmt;
 use crate::piece::{Color, Piece, PieceType};
 use num_bigint::BigInt;
 use num_traits::Signed;
-const STANDARD_BOARD_SIZE: i32 = 8;
+pub const STANDARD_BOARD_SIZE: i32 = 8;
 
 pub struct Board {
     turn: BigInt,
@@ -21,6 +21,10 @@ impl Board {
             pieces: Vec::new(),
         }
     }
+    pub fn place_piece(&mut self, piece: Piece) {
+        let x = piece;
+        self.pieces.push(x);
+    }
     pub fn get_piece_at(&self, rank: &BigInt, file: &BigInt) -> Option<&Piece> {
         for p in &self.pieces {
             if p.get_rank() == rank && p.get_file() == file {
@@ -29,7 +33,7 @@ impl Board {
         }
         None
     }
-    fn get_collision(
+    pub fn get_collision(
         &self,
         from_rank: &BigInt,
         from_file: &BigInt,
@@ -81,37 +85,4 @@ impl Board {
             false //no piece there so not legal
         }
     }
-}
-
-#[test]
-fn test_pawns() {
-    let b = Board::new();
-    assert!(b.is_move_legal(&1.into(), &1.into(), &2.into(), &1.into()));
-    assert!(b.is_move_legal(&1.into(), &1.into(), &3.into(), &1.into()));
-    assert!(!b.is_move_legal(&1.into(), &1.into(), &4.into(), &1.into()));
-}
-
-#[test]
-fn test_knights() {
-    let b = Board::new();
-    assert!(b.is_move_legal(&0.into(), &1.into(), &2.into(), &2.into()));
-    assert!(b.is_move_legal(&0.into(), &6.into(), &2.into(), &7.into()));
-    assert!(!b.is_move_legal(&0.into(), &1.into(), &4.into(), &1.into()));
-}
-
-#[test]
-fn test_rooks() {
-    let b = Board::new();
-    assert!(b.is_move_legal(&0.into(), &0.into(), &(-4).into(), &0.into()));
-    assert!(b.is_move_legal(&0.into(), &0.into(), &0.into(), &(-4).into()));
-    assert!(!b.is_move_legal(&0.into(), &0.into(), &(-4).into(), &(-4).into()));
-    assert!(!b.is_move_legal(&0.into(), &0.into(), &3.into(), &0.into()));
-}
-#[test]
-fn test_bishops() {
-    let b = Board::new();
-    assert!(b.is_move_legal(&0.into(), &2.into(), &(-2).into(), &(0).into()));
-    assert!(b.is_move_legal(&0.into(), &2.into(), &(-6).into(), &(-4).into()));
-    assert!(!b.is_move_legal(&0.into(), &2.into(), &0.into(), &(-4).into()));
-    assert!(!b.is_move_legal(&0.into(), &2.into(), &4.into(), &2.into()));
 }

@@ -9,20 +9,12 @@ pub struct PieceType {
 }
 
 impl PieceType {
+    pub fn new(_can_move: fn(&Board, &Piece, &BigInt, &BigInt) -> bool) -> Self { Self { _can_move } }
+
     fn can_move(&self, board: &Board, piece: &Piece, to_rank: &BigInt, to_file: &BigInt) -> bool {
         (self._can_move)(board, piece, to_rank, to_file)
     }
 }
-
-#[derive(Clone)]
-struct PieceManager {
-    map: HashMap<String, PieceType>,
-}
-
-impl PieceManager {
-    fn new(map: HashMap<String, PieceType>) -> Self { Self { map } }
-}
-
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum Color {
@@ -71,5 +63,8 @@ impl Piece {
     }
     pub fn get_file(&self) -> &BigInt {
         &self.file
+    }
+    pub fn has_moved(&self) -> bool {
+        self.has_moved
     }
 }
