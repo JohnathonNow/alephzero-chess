@@ -4,6 +4,7 @@ use std::str::FromStr;
 mod piece;
 mod board;
 mod piece_rules;
+mod pawn_rank;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let x = BigInt::from_str("1234543234343434")?;

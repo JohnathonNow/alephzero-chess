@@ -25,6 +25,11 @@ pub fn setup(conn: &mut Connection) -> std::io::Result<()> {
              to_file    TEXT NOT NULL,
              promotion  TEXT
          );
+         CREATE TABLE IF NOT EXISTS pawn_ranks (
+             id         INTEGER PRIMARY KEY,
+             game_id    INTEGER NOT NULL,
+             rank       TEXT NOT NULL
+         );
          ",
         params![],
     )
