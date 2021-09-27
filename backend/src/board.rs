@@ -1,15 +1,16 @@
 use std::fmt;
-
+use serde::{Deserialize, Serialize};
 use crate::piece::{Color, Piece, PieceType};
 use num_bigint::BigInt;
 use num_traits::Signed;
 pub const STANDARD_BOARD_SIZE: i32 = 8;
 
+//#[derive(Serialize, Deserialize)]
 pub struct Board {
-    turn: BigInt,
-    white_can_castle: bool,
-    black_can_castle: bool,
-    pieces: Vec<Piece>,
+    pub turn: BigInt,
+    pub white_can_castle: bool,
+    pub black_can_castle: bool,
+    pub pieces: Vec<Piece>,
 }
 
 impl Board {
