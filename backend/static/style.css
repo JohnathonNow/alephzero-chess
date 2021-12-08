@@ -2,7 +2,7 @@ body {
     margin: 0 0;
     text-align: center;
     padding: 0;
-    background-color: #000000;
+    background-color: #333333;
 }
 
 #view {
@@ -13,6 +13,52 @@ body {
     overflow: auto;
     display: block; 
     margin:0 auto;
+}
+
+.white_square {
+    background-color: #dddddd;
+}
+
+.black_square {
+    background-color: #444444;
+}
+
+.white_pawn {
+   background-image: url("/pieces/white_pawn.svg");
+}
+.white_knight {
+   background-image: url("/pieces/white_knight.svg");
+}
+.white_bishop {
+   background-image: url("/pieces/white_bishop.svg");
+}
+.white_rook {
+   background-image: url("/pieces/white_rook.svg");
+}
+.white_queen {
+   background-image: url("/pieces/white_queen.svg");
+}
+.white_king {
+   background-image: url("/pieces/white_king.svg");
+}
+
+.black_pawn {
+   background-image: url("/pieces/black_pawn.svg");
+}
+.black_knight {
+   background-image: url("/pieces/black_knight.svg");
+}
+.black_bishop {
+   background-image: url("/pieces/black_bishop.svg");
+}
+.black_rook {
+   background-image: url("/pieces/black_rook.svg");
+}
+.black_queen {
+   background-image: url("/pieces/black_queen.svg");
+}
+.black_king {
+   background-image: url("/pieces/black_king.svg");
 }
 
 ul {
