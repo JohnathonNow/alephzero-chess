@@ -87,7 +87,8 @@ window.onload = function() {
         n['data-y'] = Math.floor(i/8);
         n.classList.add((Math.floor(i/8) + i) % 2 == 0? "white_square" : "black_square");
         n.id = cell_prefix + i;
-        n.onclick = move;
+        n.onmousedown = moveBegin;
+        n.onmouseup = moveEnd;
         palette.appendChild(n);
     }
     zoom = palette.offsetWidth;
@@ -100,17 +101,22 @@ window.onload = function() {
     render();
 };
 
-function move(e) {
+function moveBegin(e) {
+    var grabbedPiece = getPiece(e.target['data-x'], e.target['data-y']);
+    if (grabbedPiece) {
+        toMove = grabbedPiece;
+    }
+    render();
+}
+function moveEnd(e) {
     grabbedPiece = getPiece(e.target['data-x'], e.target['data-y']);
-    if (toMove && (!grabbedPiece || grabbedPiece.color != toMove.color)) { 
+    if (toMove && (!grabbedPiece || grabbedPiece.color != toMove.color) && toMove != grabbedPiece) { 
         toMove.x = e.target['data-x'];
         toMove.y = e.target['data-y'];
         toMove = null;
         if (grabbedPiece) {
             grabbedPiece.alive = false;
         }
-    } else {
-        toMove = grabbedPiece;
     }
     render();
 }
