@@ -129,9 +129,10 @@ function delta(e) {
 
 function moveBegin(e) {
     var grabbedPiece = getPiece(parseInt(e.target['data-x']) + xCord, parseInt(e.target['data-y']) + yCord);
-    if (grabbedPiece) {
+    if (grabbedPiece && !toMove) {
         toMove = grabbedPiece;
     }
+    console.log(grabbedPiece, toMove);
     render();
 }
 
@@ -139,6 +140,7 @@ function moveEnd(e) {
     var x = parseInt(e.target['data-x']) + xCord;
     var y = parseInt(e.target['data-y']) + yCord;
     var grabbedPiece = getPiece(x, y);
+    console.log(grabbedPiece, toMove);
     if (toMove && (!grabbedPiece || grabbedPiece.color != toMove.color) && toMove != grabbedPiece) { 
         toMove.x = x;
         toMove.y = y;
