@@ -156,10 +156,8 @@ function moveTouch(e) {
     e.preventDefault();
     var x = e.targetTouches[0].clientX;
     var y = e.targetTouches[0].clientY;
-    console.log(e, e.target);
-    var dx = Math.floor((scrollFromX - x) / e.target.clientWidth);
-    var dy = Math.floor((scrollFromY - y) / e.target.clientHeight);
-    console.log(dx, dy);
+    var dx = Math.floor((scrollFromX - x) / e.target.clientWidth) * 2;
+    var dy = Math.floor((scrollFromY - y) / e.target.clientHeight) * 2;
     document.getElementById("xport").value = scrollFromXS + dx;
     document.getElementById("yport").value = scrollFromYS + dy;
     render();
