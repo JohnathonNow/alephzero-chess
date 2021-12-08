@@ -6,6 +6,10 @@ var toMove = null;
 var madePawnsBlack = new Set();
 var madePawnsWhite = new Set();
 var size = 12;
+var scrollFromX = null;
+var scrollFromY = null;
+var scrollFromXS = null;
+var scrollFromYS = null;
 
 var pieces = [
     {'x': 0, 'y': 0, 'type': 'black_rook', 'color': 'black', 'alive': true},
@@ -95,6 +99,8 @@ window.onload = function() {
         n.id = cell_prefix + i;
         n.onmousedown = moveBegin;
         n.onmouseup = moveEnd;
+        n.ontouchstart = startTouch;
+        n.ontouchmove = moveTouch;
         palette.appendChild(n);
     }
     zoom = palette.offsetWidth;
@@ -142,4 +148,23 @@ function moveEnd(e) {
         }
     }
     render();
+}
+
+function moveTouch(e) {
+    e.preventDefault();
+    var x = e.targetTouches[0].clientX;
+    var y = e.targetTouches[0].clientY;
+    console.log(e, e.target);
+    var dx = Math.floor((scrollFromX - x) / e.target.clientWidth);
+    var dy = Math.floor((scrollFromY - y) / e.target.clientHeight);
+    console.log(dx, dy);
+    document.getElementById("xport").value = scrollFromXS + dx;
+    document.getElementById("yport").value = scrollFromYS + dy;
+    render();
+}
+function startTouch(e) {
+    scrollFromX = e.targetTouches[0].clientX;
+    scrollFromY = e.targetTouches[0].clientY;
+    scrollFromXS = parseInt(document.getElementById("xport").value);
+    scrollFromYS = parseInt(document.getElementById("yport").value);
 }
