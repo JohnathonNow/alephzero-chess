@@ -1,4 +1,3 @@
-var zoom = 1024;
 var xCord = 0;
 var yCord = 0;
 var cell_prefix = "square_";
@@ -64,14 +63,40 @@ function addPawns() {
     }
 }
 
+function addSquares() {
+    var palette = document.getElementById("zoomable");
+	while (palette.firstChild) {
+		palette.removeChild(palette.firstChild);
+	}
+    for (var i = 0; i < size*size; i++) {
+        var n = document.createElement("li");
+        n['data-x'] = i % size;
+        n['data-y'] = Math.floor(i/size);
+        n.id = cell_prefix + i;
+        n.onmousedown = moveBegin;
+        n.onmouseup = moveEnd;
+        n.ontouchstart = startTouch;
+        n.ontouchmove = moveTouch;
+		n.style.width = 100/size + '%';
+		n.style.height = n.style.width;
+        palette.appendChild(n);
+    }
+}
+
 function render() {
     xCord = parseInt(document.getElementById("xport").value);
     yCord = parseInt(document.getElementById("yport").value);
+    var newSize = parseInt(document.getElementById("zoom").value);
+    if (size != newSize) {
+        size = newSize;
+        addSquares();
+    }
     addPawns();
     for (var i = 0; i < size*size; i++) {
         var n = document.getElementById(cell_prefix + i);
         n.className = "";
-        n.classList.add((Math.floor(i/size) + i + xCord) % 2 == 0? "white_square" : "black_square");
+        var f = size % 2 == 0? Math.floor(i/size) : 0;
+        n.classList.add((f + i + xCord) % 2 == 0? "white_square" : "black_square");
     }
     for (var i = 0; i < pieces.length; i++) {
         var piece = pieces[i];
@@ -83,35 +108,8 @@ function render() {
     }
 }
 
-function chzoom(w) {
-    zoom *= w;
-
-	document.getElementById("zoomable").style.width = zoom+"px";
-	document.getElementById("zoomable").style.height = zoom+"px";
-}
- 
 window.onload = function() {
-    var palette = document.getElementById("zoomable");
-    for (var i = 0; i < size*size; i++) {
-        var n = document.createElement("li");
-        n['data-x'] = i % size;
-        n['data-y'] = Math.floor(i/size);
-        n.id = cell_prefix + i;
-        n.onmousedown = moveBegin;
-        n.onmouseup = moveEnd;
-        n.ontouchstart = startTouch;
-        n.ontouchmove = moveTouch;
-        palette.appendChild(n);
-    }
-    zoom = palette.offsetWidth;
-    /*
-    document.getElementById('zoomout').onclick = function(e) {
-        chzoom(1/1.2);
-    };
-    document.getElementById('zoomin').onclick = function(e) {
-        chzoom(1.2);
-    };
-    */
+    addSquares();
     document.getElementById('xport').oninput = render;
     document.getElementById('yport').oninput = render;
     var deltas = document.getElementsByClassName("delta");
