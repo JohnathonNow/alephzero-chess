@@ -2,7 +2,7 @@ body {
     margin: 0 0;
     text-align: center;
     padding: 0;
-    background-color: #333333;
+    background-color: #EEEEEE;
 }
 
 #view {
@@ -84,7 +84,7 @@ li {
     border-width: 2px;
     border-color: #222222;
     margin: 0;
-    transition: background-color 1000ms ease-in-out;
+    transition: background-color 100ms ease-in-out;
     background-repeat: no-repeat;
     background-size: cover;
 }
