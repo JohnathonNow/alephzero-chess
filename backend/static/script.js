@@ -53,7 +53,7 @@ function addPawns() {
         }
         if (displayed(x, 6) && !madePawnsWhite.has(x)) {
             pieces.push(
-    {'x': x, 'y': 6, 'type': 'white_pawn', 'color': 'black', 'alive': true}
+    {'x': x, 'y': 6, 'type': 'white_pawn', 'color': 'white', 'alive': true}
             );
             madePawnsWhite.add(x);
         }
@@ -115,23 +115,27 @@ window.onload = function() {
     render();
 };
 
-function moveBegin(e) {
-    var grabbedPiece = getPiece(e.target['data-x'] + xCord, e.target['data-y'] + yCord);
-    if (grabbedPiece) {
-        toMove = grabbedPiece;
-    }
-    render();
-}
 function delta(e) {
     var ele = document.getElementById(e.target.getAttribute('data-target'));
     ele.value = parseInt(ele.value) + parseInt(e.target.getAttribute('data-value'));
     render();
 }
+
+function moveBegin(e) {
+    var grabbedPiece = getPiece(parseInt(e.target['data-x']) + xCord, parseInt(e.target['data-y']) + yCord);
+    if (grabbedPiece) {
+        toMove = grabbedPiece;
+    }
+    render();
+}
+
 function moveEnd(e) {
-    var grabbedPiece = getPiece(e.target['data-x'] + xCord, e.target['data-y'] + yCord);
+    var x = parseInt(e.target['data-x']) + xCord;
+    var y = parseInt(e.target['data-y']) + yCord;
+    var grabbedPiece = getPiece(x, y);
     if (toMove && (!grabbedPiece || grabbedPiece.color != toMove.color) && toMove != grabbedPiece) { 
-        toMove.x = e.target['data-x'] + xCord;
-        toMove.y = e.target['data-y'] + yCord;
+        toMove.x = x;
+        toMove.y = y;
         toMove = null;
         if (grabbedPiece) {
             grabbedPiece.alive = false;
