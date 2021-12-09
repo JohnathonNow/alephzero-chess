@@ -13,6 +13,21 @@ body {
     overflow: auto;
     display: block; 
     margin:0 auto;
+    position: relative;
+}
+
+ #overlay {
+  position: absolute; /* Sit on top of the page content */
+  display: none; /* Hidden by default */
+  width: 100%; /* Full width (cover the whole page) */
+  height: 100%; /* Full height (cover the whole page) */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.5); /* Black background with opacity */
+  z-index: 2; /* Specify a stack order in case you're using a different order for other elements */
+  cursor: pointer; /* Add a pointer on hover */
 }
 
 .white_square {
@@ -77,11 +92,15 @@ ul {
 }
 
 li {
+    -webkit-user-select: none; /* Safari */        
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* IE10+/Edge */
+    user-select: none; /* Standard */
     box-sizing: border-box;
     cursor: pointer;
     display: block;
-    width: 8.333333333%;
-    height: 8.333333333%;
+    width: 12.5%;
+    height: 12.5%;
     float: left;
     padding: 0;
     border-style: solid;
