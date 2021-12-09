@@ -141,7 +141,7 @@ function compute(x, y) {
                 if (a && a.type == "checker") {
                     total += 1;
                 }
-                let p = getPiece(x + i, y + i);
+                let p = getPiece(x - i, y + i);
                 if (p && p != piece) { break; }
             }
             for (var i = 1; i < 8; i += 1) {
@@ -149,7 +149,7 @@ function compute(x, y) {
                 if (a && a.type == "checker") {
                     total += 1;
                 }
-                let p = getPiece(x + i, y + i);
+                let p = getPiece(x - i, y - i);
                 if (p && p != piece) { break; }
             }
             for (var i = 1; i < 8; i += 1) {
@@ -157,7 +157,7 @@ function compute(x, y) {
                 if (a && a.type == "checker") {
                     total += 1;
                 }
-                let p = getPiece(x + i, y + i);
+                let p = getPiece(x + i, y - i);
                 if (p && p != piece) { break; }
             }
             return total;
