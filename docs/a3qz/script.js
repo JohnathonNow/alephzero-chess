@@ -160,10 +160,6 @@ function compute(x, y) {
                 let p = getPiece(x + i, y + i);
                 if (p && p != piece) { break; }
             }
-            let bob = getPieceWanted(x, y);
-            if (bob && bob.type == "checker") {
-                total += 1;
-            }
             return total;
         case "white_knight":
             let a = getPieceWanted(x - 2, y - 1);
