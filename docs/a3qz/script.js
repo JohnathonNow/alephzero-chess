@@ -229,7 +229,7 @@ function delta(e) {
 
 function moveBegin(e) {
     var grabbedPiece = getPiece(parseInt(e.target['data-x']) + xCord, parseInt(e.target['data-y']) + yCord);
-    if (grabbedPiece && !toMove) {
+    if (grabbedPiece && !toMove && grabbedPiece.color == "white") {
         toMove = grabbedPiece;
     }
     render();
@@ -239,7 +239,7 @@ function moveEnd(e) {
     var x = parseInt(e.target['data-x']) + xCord;
     var y = parseInt(e.target['data-y']) + yCord;
     var grabbedPiece = getPiece(x, y);
-    if (toMove && (!grabbedPiece || grabbedPiece.color != toMove.color) && toMove != grabbedPiece) { 
+    if (toMove && (!grabbedPiece) && toMove != grabbedPiece) { 
         toMove.x = x;
         toMove.y = y;
         toMove = null;
