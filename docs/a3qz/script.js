@@ -119,6 +119,89 @@ function addSquares() {
     }
 }
 
+function attackable(xx, yy) {
+    for (var x = 0; x < 8; x++) {
+    for (var y = 0; y < 8; y++) {
+    var piece = getPiece(x, y);
+    if (!piece) continue;
+    switch (piece.type) {
+        case "black_pawn":
+            if (x + 1 == xx && y + 1 == yy) {
+                return true;
+            }
+            if (x - 1 == xx && y + 1 == yy) {
+                return true;
+            }
+            break;
+        case "black_bishop":
+            var total = 0;
+            for (var i = 1; i < 8; i += 1) {
+                if (x + i == xx && y + i == yy) { return true; }
+                if (getPiece(x + i, y + i)) { break; }
+            }
+            for (var i = 1; i < 8; i += 1) {
+                if (x + i == xx && y - i == yy) { return true; }
+                if (getPiece(x + i, y - i)) { break; }
+            }
+            for (var i = 1; i < 8; i += 1) {
+                if (x - i == xx && y - i == yy) { return true; }
+                if (getPiece(x - i, y - i)) { break; }
+            }
+            for (var i = 1; i < 8; i += 1) {
+                if (x - i == xx && y + i == yy) { return true; }
+                if (getPiece(x - i, y + i)) { break; }
+            }
+            break;
+        case "black_rook":
+            var total = 0;
+            for (var i = 1; i < 8; i += 1) {
+                if (x + i == xx && y == yy) { return true; }
+                if (getPiece(x + i, y)) { break; }
+            }
+            for (var i = 1; i < 8; i += 1) {
+                if (x == xx && y - i == yy) { return true; }
+                if (getPiece(x, y - i)) { break; }
+            }
+            for (var i = 1; i < 8; i += 1) {
+                if (x - i == xx && y == yy) { return true; }
+                if (getPiece(x - i, y)) { break; }
+            }
+            for (var i = 1; i < 8; i += 1) {
+                if (x == xx && y + i == yy) { return true; }
+                if (getPiece(x, y + i)) { break; }
+            }
+            break;
+        case "black_knight":
+            if (x - 1 == xx && y + 2 == yy) {
+                return true;
+            }
+            if (x - 1 == xx && y - 2 == yy) {
+                return true;
+            }
+            if (x + 1 == xx && y - 2 == yy) {
+                return true;
+            }
+            if (x + 1 == xx && y + 2 == yy) {
+                return true;
+            }
+            if (x - 2 == xx && y - 1 == yy) {
+                return true;
+            }
+            if (x - 2 == xx && y + 1 == yy) {
+                return true;
+            }
+            if (x + 2 == xx && y - 1 == yy) {
+                return true;
+            }
+            if (x + 2 == xx && y + 1 == yy) {
+                return true;
+            }
+            break;
+    }
+    }}
+    return false;
+}
+
 function compute(x, y) {
     var piece = getPiece(x, y);
     switch (piece.type) {
@@ -240,12 +323,11 @@ function moveEnd(e) {
     var y = parseInt(e.target['data-y']) + yCord;
     var grabbedPiece = getPiece(x, y);
     if (toMove && (!grabbedPiece) && toMove != grabbedPiece) { 
-        toMove.x = x;
-        toMove.y = y;
-        toMove = null;
-        if (grabbedPiece) {
-            grabbedPiece.alive = false;
+        if (!attackable(x, y)) {
+            toMove.x = x;
+            toMove.y = y;
         }
+        toMove = null;
     }
     render();
 }
