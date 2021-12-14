@@ -104,6 +104,9 @@ function render() {
             var d = piece.x - xCord + (piece.y - yCord) * size;
             var n = document.getElementById(cell_prefix + d);
             n.classList.add(piece.type);
+            if (piece == toMove) {
+                n.classList.add("selected");
+            }
         }
     }
 }
@@ -137,8 +140,8 @@ function moveEnd(e) {
     var x = parseInt(e.target['data-x']) + xCord;
     var y = parseInt(e.target['data-y']) + yCord;
     var grabbedPiece = getPiece(x, y);
-    if (toMove && (!grabbedPiece || grabbedPiece.color != toMove.color) && toMove != grabbedPiece) { 
-        if (movable(toMove, x, y)) {
+    if (toMove && toMove != grabbedPiece) { 
+        if (movable(toMove, x, y)  && (!grabbedPiece || grabbedPiece.color != toMove.color)) {
             toMove.x = x;
             toMove.y = y;
             if (grabbedPiece) {

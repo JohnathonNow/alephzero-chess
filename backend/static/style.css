@@ -15,6 +15,10 @@ body {
     margin:0 auto;
 }
 
+li.selected {
+   background-color: #888800;
+}
+
 .white_square {
     background-color: #dddddd;
 }

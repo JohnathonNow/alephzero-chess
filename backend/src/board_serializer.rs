@@ -1,7 +1,13 @@
 use crate::board::Board;
+use crate::piece_rules::StandardChess;
+use crate::piece_serializer::piece_serialize;
 
 pub fn board_serialize(b: &Board) -> String {
     let mut out = String::new();
-    out += &format!("{{turn: {}, wc: {}, bc: {}}}", b.turn, b.white_can_castle, b.black_can_castle);
+    let mut pieces = Vec::new();
+    for piece in &b.pieces {
+        pieces.push(piece_serialize(piece));
+    }
+    out += &format!("{{\"turn\": {}, \"wc\": {}, \"bc\": {}, \"pieces\": [{}]}}", b.turn, b.white_can_castle, b.black_can_castle, pieces.join(","));
     out
 }

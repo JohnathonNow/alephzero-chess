@@ -1,12 +1,13 @@
 use std::fmt;
 use serde::{Deserialize, Serialize};
-use crate::piece::{Color, Piece, PieceType};
+use crate::piece::{Color, Piece};
+use crate::piece_rules::{PieceRules, StandardChess};
 use num_bigint::BigInt;
 use num_traits::Signed;
 pub const STANDARD_BOARD_SIZE: i32 = 8;
 
 //#[derive(Serialize, Deserialize)]
-pub struct Board {
+pub struct Board{
     pub turn: BigInt,
     pub white_can_castle: bool,
     pub black_can_castle: bool,
@@ -20,7 +21,7 @@ impl Board {
             white_can_castle: true,
             black_can_castle: true,
             pieces: Vec::new(),
-        }
+                }
     }
     pub fn place_piece(&mut self, piece: Piece) {
         let x = piece;
@@ -64,8 +65,9 @@ impl Board {
         }
         true
     }
-    pub fn is_move_legal(
+    pub fn is_move_legal<T: PieceRules>(
         &self,
+        rules: &T,
         from_rank: &BigInt,
         from_file: &BigInt,
         to_rank: &BigInt,
@@ -75,7 +77,7 @@ impl Board {
             return false;
         }
         if let Some(p) = self.get_piece_at(from_rank, from_file) {
-            let good_so_far = p.can_move(&self, to_rank, to_file);
+            let good_so_far = rules.can_move(&self, p, to_rank, to_file);
             if let Some(other) = self.get_piece_at(to_rank, to_file) {
                 if p.get_color() == other.get_color() {
                     return false;

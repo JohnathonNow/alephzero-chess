@@ -1,25 +1,21 @@
 use std::{collections::HashMap, fmt};
-
 use num_bigint::BigInt;
 
 use crate::board::Board;
-#[derive(Clone, Copy)]
-pub struct PieceType {
-    _can_move: fn(&Board, &Piece, &BigInt, &BigInt) -> bool,
-}
-
-impl PieceType {
-    pub fn new(_can_move: fn(&Board, &Piece, &BigInt, &BigInt) -> bool) -> Self { Self { _can_move } }
-
-    fn can_move(&self, board: &Board, piece: &Piece, to_rank: &BigInt, to_file: &BigInt) -> bool {
-        (self._can_move)(board, piece, to_rank, to_file)
-    }
-}
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum Color {
     Black,
     White,
+}
+
+impl ToString for Color {
+    fn to_string(&self) -> String {
+        match self {
+            Color::Black => "B",
+            Color::White => "W",
+        }.into()
+    }
 }
 
 impl Color {
@@ -33,7 +29,7 @@ impl Color {
 
 #[derive(Clone)]
 pub struct Piece {
-    piece: PieceType,
+    piece: String,
     rank: BigInt,
     file: BigInt,
     captured: bool,
@@ -42,7 +38,7 @@ pub struct Piece {
 }
 
 impl Piece {
-    pub fn new(piece: PieceType, color: Color, rank: BigInt, file: BigInt) -> Self {
+    pub fn new(piece: String, color: Color, rank: BigInt, file: BigInt) -> Self {
         Self {
             piece,
             color,
@@ -52,8 +48,8 @@ impl Piece {
             has_moved: false,
         }
     }
-    pub fn can_move(&self, board: &Board, to_rank: &BigInt, to_file: &BigInt) -> bool {
-        self.piece.can_move(board, self, to_rank, to_file)
+    pub fn get_type(&self) -> &String {
+        &self.piece
     }
     pub fn get_color(&self) -> Color {
         self.color
@@ -63,6 +59,9 @@ impl Piece {
     }
     pub fn get_file(&self) -> &BigInt {
         &self.file
+    }
+    pub fn is_captured(&self) -> bool {
+        self.captured
     }
     pub fn has_moved(&self) -> bool {
         self.has_moved
