@@ -130,7 +130,6 @@ function moveBegin(e) {
     if (grabbedPiece && !toMove) {
         toMove = grabbedPiece;
     }
-    console.log(grabbedPiece, toMove);
     render();
 }
 
@@ -138,14 +137,15 @@ function moveEnd(e) {
     var x = parseInt(e.target['data-x']) + xCord;
     var y = parseInt(e.target['data-y']) + yCord;
     var grabbedPiece = getPiece(x, y);
-    console.log(grabbedPiece, toMove);
     if (toMove && (!grabbedPiece || grabbedPiece.color != toMove.color) && toMove != grabbedPiece) { 
-        toMove.x = x;
-        toMove.y = y;
-        toMove = null;
-        if (grabbedPiece) {
-            grabbedPiece.alive = false;
+        if (movable(toMove, x, y)) {
+            toMove.x = x;
+            toMove.y = y;
+            if (grabbedPiece) {
+                grabbedPiece.alive = false;
+            }
         }
+        toMove = null;
     }
     render();
 }
@@ -165,4 +165,140 @@ function startTouch(e) {
     scrollFromY = e.targetTouches[0].clientY;
     scrollFromXS = parseInt(document.getElementById("xport").value);
     scrollFromYS = parseInt(document.getElementById("yport").value);
+}
+
+function movable(piece, xx, yy) {
+    var x = piece.x;
+    var y = piece.y;
+    switch (piece.type) {
+        case "black_pawn":
+            if (x == xx && y + 1 == yy) {
+                return true;
+            }
+            if (x == xx && y + 2 == yy && y == 1) {
+                return true;
+            }
+            if (Math.abs(x - xx) <= 1 && y + 1 == yy && getPiece(xx, yy)) {
+                return true;
+            }
+            break;
+        case "white_pawn":
+            if (x == xx && y - 1 == yy) {
+                return true;
+            }
+            if (x == xx && y - 2 == yy && y == 6) {
+                return true;
+            }
+            if (Math.abs(x - xx) <= 1 && y - 1 == yy && getPiece(xx, yy)) {
+                return true;
+            }
+            break;
+        case "black_queen":
+        case "white_queen":
+            for (var i = 1; i < 8; i += 1) {
+                if (x + i == xx && y + i == yy) { return true; }
+                if (getPiece(x + i, y + i)) { break; }
+            }
+            for (var i = 1; i < 8; i += 1) {
+                if (x + i == xx && y - i == yy) { return true; }
+                if (getPiece(x + i, y - i)) { break; }
+            }
+            for (var i = 1; i < 8; i += 1) {
+                if (x - i == xx && y - i == yy) { return true; }
+                if (getPiece(x - i, y - i)) { break; }
+            }
+            for (var i = 1; i < 8; i += 1) {
+                if (x - i == xx && y + i == yy) { return true; }
+                if (getPiece(x - i, y + i)) { break; }
+            }
+            for (var i = 1; i < 8; i += 1) {
+                if (x + i == xx && y == yy) { return true; }
+                if (getPiece(x + i, y)) { break; }
+            }
+            for (var i = 1; i < 8; i += 1) {
+                if (x == xx && y - i == yy) { return true; }
+                if (getPiece(x, y - i)) { break; }
+            }
+            for (var i = 1; i < 8; i += 1) {
+                if (x - i == xx && y == yy) { return true; }
+                if (getPiece(x - i, y)) { break; }
+            }
+            for (var i = 1; i < 8; i += 1) {
+                if (x == xx && y + i == yy) { return true; }
+                if (getPiece(x, y + i)) { break; }
+            }
+            break;
+        case "black_bishop":
+        case "white_bishop":
+            for (var i = 1; i < 8; i += 1) {
+                if (x + i == xx && y + i == yy) { return true; }
+                if (getPiece(x + i, y + i)) { break; }
+            }
+            for (var i = 1; i < 8; i += 1) {
+                if (x + i == xx && y - i == yy) { return true; }
+                if (getPiece(x + i, y - i)) { break; }
+            }
+            for (var i = 1; i < 8; i += 1) {
+                if (x - i == xx && y - i == yy) { return true; }
+                if (getPiece(x - i, y - i)) { break; }
+            }
+            for (var i = 1; i < 8; i += 1) {
+                if (x - i == xx && y + i == yy) { return true; }
+                if (getPiece(x - i, y + i)) { break; }
+            }
+            break;
+        case "black_rook":
+        case "white_rook":
+            for (var i = 1; i < 8; i += 1) {
+                if (x + i == xx && y == yy) { return true; }
+                if (getPiece(x + i, y)) { break; }
+            }
+            for (var i = 1; i < 8; i += 1) {
+                if (x == xx && y - i == yy) { return true; }
+                if (getPiece(x, y - i)) { break; }
+            }
+            for (var i = 1; i < 8; i += 1) {
+                if (x - i == xx && y == yy) { return true; }
+                if (getPiece(x - i, y)) { break; }
+            }
+            for (var i = 1; i < 8; i += 1) {
+                if (x == xx && y + i == yy) { return true; }
+                if (getPiece(x, y + i)) { break; }
+            }
+            break;
+        case "black_knight":
+        case "white_knight":
+            if (x - 1 == xx && y + 2 == yy) {
+                return true;
+            }
+            if (x - 1 == xx && y - 2 == yy) {
+                return true;
+            }
+            if (x + 1 == xx && y - 2 == yy) {
+                return true;
+            }
+            if (x + 1 == xx && y + 2 == yy) {
+                return true;
+            }
+            if (x - 2 == xx && y - 1 == yy) {
+                return true;
+            }
+            if (x - 2 == xx && y + 1 == yy) {
+                return true;
+            }
+            if (x + 2 == xx && y - 1 == yy) {
+                return true;
+            }
+            if (x + 2 == xx && y + 1 == yy) {
+                return true;
+            }
+            break;
+        case "white_king":
+        case "black_king":
+            if (Math.abs(x - xx) <= 1 && Math.abs(y - yy) <= 1) {
+                return true;
+            }
+            break;
+    }
+    return false;
 }
