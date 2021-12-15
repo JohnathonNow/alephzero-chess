@@ -23,9 +23,25 @@ use actix_files as fs;
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     let mut b = Board::new();
-    b.place_piece(Piece::new("pawn".to_string(), piece::Color::Black, 1.into(), 0.into()));
+    b.place_piece(Piece::new("rook".to_string(), piece::Color::Black, 0.into(), 0.into()));
+    b.place_piece(Piece::new("rook".to_string(), piece::Color::White, 7.into(), 0.into()));
+    b.place_piece(Piece::new("rook".to_string(), piece::Color::Black, 0.into(), 7.into()));
+    b.place_piece(Piece::new("rook".to_string(), piece::Color::White, 7.into(), 7.into()));
+    b.place_piece(Piece::new("knight".to_string(), piece::Color::Black, 0.into(), 1.into()));
+    b.place_piece(Piece::new("knight".to_string(), piece::Color::White, 7.into(), 1.into()));
+    b.place_piece(Piece::new("knight".to_string(), piece::Color::Black, 0.into(), 6.into()));
+    b.place_piece(Piece::new("knight".to_string(), piece::Color::White, 7.into(), 6.into()));
+    b.place_piece(Piece::new("bishop".to_string(), piece::Color::Black, 0.into(), 2.into()));
+    b.place_piece(Piece::new("bishop".to_string(), piece::Color::White, 7.into(), 2.into()));
+    b.place_piece(Piece::new("bishop".to_string(), piece::Color::Black, 0.into(), 5.into()));
+    b.place_piece(Piece::new("bishop".to_string(), piece::Color::White, 7.into(), 5.into()));
+    b.place_piece(Piece::new("king".to_string(), piece::Color::Black, 0.into(), 4.into()));
+    b.place_piece(Piece::new("king".to_string(), piece::Color::White, 7.into(), 4.into()));
+    b.place_piece(Piece::new("queen".to_string(), piece::Color::Black, 0.into(), 3.into()));
+    b.place_piece(Piece::new("queen".to_string(), piece::Color::White, 7.into(), 3.into()));
+    
     let board = web::Data::new(Arc::new(Mutex::new(b)));
-    HttpServer::new(move || App::new().service(fs::Files::new("/", "./static").index_file("index.html")).service(get).app_data(board.clone()))
+    HttpServer::new(move || App::new().service(get).app_data(board.clone()).service(fs::Files::new("/", "./static").index_file("index.html")))
         .bind("127.0.0.1:8080")?
         .run()
         .await?;

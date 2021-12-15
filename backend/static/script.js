@@ -10,24 +10,7 @@ var scrollFromY = null;
 var scrollFromXS = null;
 var scrollFromYS = null;
 
-var pieces = [
-    {'x': 0, 'y': 0, 'type': 'black_rook', 'color': 'black', 'alive': true},
-    {'x': 1, 'y': 0, 'type': 'black_knight', 'color': 'black', 'alive': true},
-    {'x': 2, 'y': 0, 'type': 'black_bishop', 'color': 'black', 'alive': true},
-    {'x': 3, 'y': 0, 'type': 'black_queen', 'color': 'black', 'alive': true},
-    {'x': 4, 'y': 0, 'type': 'black_king', 'color': 'black', 'alive': true},
-    {'x': 5, 'y': 0, 'type': 'black_bishop', 'color': 'black', 'alive': true},
-    {'x': 6, 'y': 0, 'type': 'black_knight', 'color': 'black', 'alive': true},
-    {'x': 7, 'y': 0, 'type': 'black_rook', 'color': 'black', 'alive': true},
-    {'x': 0, 'y': 7, 'type': 'white_rook', 'color': 'white', 'alive': true},
-    {'x': 1, 'y': 7, 'type': 'white_knight', 'color': 'white', 'alive': true},
-    {'x': 2, 'y': 7, 'type': 'white_bishop', 'color': 'white', 'alive': true},
-    {'x': 3, 'y': 7, 'type': 'white_queen', 'color': 'white', 'alive': true},
-    {'x': 4, 'y': 7, 'type': 'white_king', 'color': 'white', 'alive': true},
-    {'x': 5, 'y': 7, 'type': 'white_bishop', 'color': 'white', 'alive': true},
-    {'x': 6, 'y': 7, 'type': 'white_knight', 'color': 'white', 'alive': true},
-    {'x': 7, 'y': 7, 'type': 'white_rook', 'color': 'white', 'alive': true},
-];
+var pieces = [];
 
 function displayed(x, y) {
     x -= xCord;
@@ -112,6 +95,7 @@ function render() {
 }
 
 window.onload = function() {
+    getBoard();
     addSquares();
     document.getElementById('xport').oninput = render;
     document.getElementById('yport').oninput = render;
@@ -304,4 +288,28 @@ function movable(piece, xx, yy) {
             break;
     }
     return false;
+}
+
+function getBoard() {
+    fetch("/board")
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`Request failed with status ${response.status}`)
+      }
+      return response.json()
+    })
+    .then(data => {
+      console.log(data);
+      pieces = data.pieces;
+      madePawnsBlack.clear();
+      madePawnsWhite.clear();
+      for (var i = 0; i < data.black_pawns.length; i++) {
+          madePawnsBlack.add(data.black_pawns[i]);
+      }
+      for (var i = 0; i < data.white_pawns.length; i++) {
+        madePawnsWhite.add(data.white_pawns[i]);
+    }
+      render();
+    })
+    .catch(error => console.log(error))
 }

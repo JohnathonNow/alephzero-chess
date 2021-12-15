@@ -1,5 +1,6 @@
 use std::fmt;
 use serde::{Deserialize, Serialize};
+use crate::pawn_rank::PawnRank;
 use crate::piece::{Color, Piece};
 use crate::piece_rules::{PieceRules, StandardChess};
 use num_bigint::BigInt;
@@ -12,6 +13,9 @@ pub struct Board{
     pub white_can_castle: bool,
     pub black_can_castle: bool,
     pub pieces: Vec<Piece>,
+    pub white_pawns: PawnRank,
+    pub black_pawns: PawnRank,
+
 }
 
 impl Board {
@@ -21,6 +25,9 @@ impl Board {
             white_can_castle: true,
             black_can_castle: true,
             pieces: Vec::new(),
+            white_pawns: PawnRank::new(),
+            black_pawns: PawnRank::new(),
+
                 }
     }
     pub fn place_piece(&mut self, piece: Piece) {

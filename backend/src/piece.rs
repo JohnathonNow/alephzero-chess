@@ -12,8 +12,8 @@ pub enum Color {
 impl ToString for Color {
     fn to_string(&self) -> String {
         match self {
-            Color::Black => "B",
-            Color::White => "W",
+            Color::Black => "black",
+            Color::White => "white",
         }.into()
     }
 }

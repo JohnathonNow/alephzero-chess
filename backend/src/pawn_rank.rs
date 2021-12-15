@@ -22,3 +22,9 @@ impl PawnRank {
         self.moved.insert(file.clone());
     }
 }
+
+impl ToString for PawnRank {
+    fn to_string(&self) -> String {
+        self.moved.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(",")
+    }
+}
