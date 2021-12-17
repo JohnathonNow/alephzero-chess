@@ -20,3 +20,10 @@ impl ResponseError for Error {
         self.s.clone().into()
     }
 }
+impl Error {
+
+
+pub(crate) fn new() -> Self {
+    Self {s: "bob".into()}
+}
+}

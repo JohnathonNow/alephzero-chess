@@ -11,6 +11,7 @@ var scrollFromXS = null;
 var scrollFromYS = null;
 
 var pieces = [];
+var movable = [];
 
 function displayed(x, y) {
     x -= xCord;
@@ -92,6 +93,12 @@ function render() {
             }
         }
     }
+    for (var i = 0; i < movable.length; i++) {
+        var space = movable[i];
+        var d = space[1] - xCord + (space[0] - yCord) * size;
+        var n = document.getElementById(cell_prefix + d);
+        n.classList.add("movable");
+    }
 }
 
 window.onload = function() {
@@ -116,6 +123,8 @@ function moveBegin(e) {
     var grabbedPiece = getPiece(parseInt(e.target['data-x']) + xCord, parseInt(e.target['data-y']) + yCord);
     if (grabbedPiece && !toMove) {
         toMove = grabbedPiece;
+        movable = [];
+        getMoves();
     }
     render();
 }
@@ -125,7 +134,7 @@ function moveEnd(e) {
     var y = parseInt(e.target['data-y']) + yCord;
     var grabbedPiece = getPiece(x, y);
     if (toMove && toMove != grabbedPiece) { 
-        if (movable(toMove, x, y)  && (!grabbedPiece || grabbedPiece.color != toMove.color)) {
+        if (ismovable(toMove, x, y)  && (!grabbedPiece || grabbedPiece.color != toMove.color)) {
             toMove.x = x;
             toMove.y = y;
             if (grabbedPiece) {
@@ -133,6 +142,7 @@ function moveEnd(e) {
             }
         }
         toMove = null;
+        movable = [];
     }
     render();
 }
@@ -154,7 +164,7 @@ function startTouch(e) {
     scrollFromYS = parseInt(document.getElementById("yport").value);
 }
 
-function movable(piece, xx, yy) {
+function ismovable(piece, xx, yy) {
     var x = piece.x;
     var y = piece.y;
     switch (piece.type) {
@@ -309,6 +319,23 @@ function getBoard() {
       for (var i = 0; i < data.white_pawns.length; i++) {
         madePawnsWhite.add(data.white_pawns[i]);
     }
+      render();
+    })
+    .catch(error => console.log(error))
+}
+
+function getMoves() {
+    ///legal/{px}/{py}/{wx}/{wy}/{zoom}
+    fetch("/legal/"+toMove.y+"/"+toMove.x+"/"+yCord+"/"+xCord+"/"+size)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`Request failed with status ${response.status}`)
+      }
+      return response.json()
+    })
+    .then(data => {
+      console.log(data);
+      movable = data;
       render();
     })
     .catch(error => console.log(error))

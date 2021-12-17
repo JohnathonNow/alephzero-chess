@@ -42,6 +42,21 @@ impl Board {
         }
         None
     }
+    pub fn get_piece_or_pawn_at(&mut self, rank: &BigInt, file: &BigInt) -> Option<&Piece> {
+        if *rank == 1.into() && !self.black_pawns.has_moved(file) {
+            self.black_pawns.set_moved(file);
+            self.place_piece(Piece::new("pawn".to_string(), Color::Black, rank.clone(), file.clone()));
+        }
+        if *rank == 6.into() && !self.white_pawns.has_moved(file) {
+            self.white_pawns.set_moved(file);
+            self.place_piece(Piece::new("pawn".to_string(), Color::White, rank.clone(), file.clone()));
+
+        }
+        if let Some(x) = self.get_piece_at(rank, file) {
+            return Some(x);
+        }
+        None
+    }
     pub fn get_collision(
         &self,
         from_rank: &BigInt,

@@ -19,6 +19,10 @@ li.selected {
    background-color: #888800;
 }
 
+li.movable {
+   background-color: #cc8800;
+}
+
 .white_square {
     background-color: #dddddd;
 }
