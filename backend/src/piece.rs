@@ -66,4 +66,14 @@ impl Piece {
     pub fn has_moved(&self) -> bool {
         self.has_moved
     }
+
+    pub(crate) fn capture(&mut self) {
+        self.captured = true;
+    }
+
+    pub(crate) fn goto(&mut self, rank: &BigInt, file: &BigInt) {
+        self.rank = rank.clone();
+        self.file = file.clone();
+        self.has_moved = true;
+    }
 }

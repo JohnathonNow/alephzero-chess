@@ -43,7 +43,7 @@ async fn main() -> std::io::Result<()> {
     b.place_piece(Piece::new("queen".to_string(), piece::Color::White, 7.into(), 3.into()));
     
     let board = web::Data::new(Arc::new(Mutex::new(b)));
-    HttpServer::new(move || App::new().service(get).service(get_legal).app_data(board.clone()).data(Arc::new(StandardChess::new())).service(fs::Files::new("/", "./static").index_file("index.html")))
+    HttpServer::new(move || App::new().service(get).service(get_legal).service(get_move).app_data(board.clone()).data(Arc::new(StandardChess::new())).service(fs::Files::new("/", "./static").index_file("index.html")))
         .bind("127.0.0.1:8080")?
         .run()
         .await?;
@@ -80,7 +80,7 @@ pub async fn get_legal(
     while xx <  wwx {
         let mut yy = bigwy.clone();
         while yy < wwy {
-            if b.is_move_legal::<StandardChess>(&rules, &bigpx, &bigpy, &xx, &yy) {
+            if Board::is_move_legal::<StandardChess>(&mut b, &rules, &bigpx, &bigpy, &xx, &yy) {
                 results.push(format!("[{}, {}]", xx, yy));
             }
             yy += 1;
@@ -88,5 +88,24 @@ pub async fn get_legal(
         xx += 1;
     }
     Ok(HttpResponse::Ok().content_type("application/json").body(format!("[{}]", results.join(","))))
+}
 
+#[get("/move/{px}/{py}/{dx}/{dy}")]
+pub async fn get_move(
+    board: web::Data<Arc<Mutex<Board>>>,
+    rules: web::Data<Arc<StandardChess>>,
+    web::Path((px, py, dx, dy)): web::Path<(String, String, String, String)>
+) -> Result<HttpResponse, Error> {
+    let bigpx = BigInt::from_str(&px).map_err(|_| Error::new())?;
+    let bigpy = BigInt::from_str(&py).map_err(|_| Error::new())?;
+    let bigdx = BigInt::from_str(&dx).map_err(|_| Error::new())?;
+    let bigdy = BigInt::from_str(&dy).map_err(|_| Error::new())?;
+
+    let mut b = board.lock().unwrap();
+   
+    if Board::is_move_legal::<StandardChess>(&mut b, &rules, &bigpx, &bigpy, &bigdx, &bigdy) {
+        b.do_move(&bigpx, &bigpy, &bigdx, &bigdy);
+    }
+   
+    Ok(HttpResponse::Ok().content_type("application/json").body("swag"))
 }

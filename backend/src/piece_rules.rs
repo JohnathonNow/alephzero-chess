@@ -9,12 +9,12 @@ use crate::{
 };
 
 pub trait PieceRules {
-    fn can_move(&self, board: &Board, piece: &Piece, to_rank: &BigInt, to_file: &BigInt) -> bool;
+    fn can_move(&self, board: &mut Board, i: usize, to_rank: &BigInt, to_file: &BigInt) -> bool;
 }
 
 #[derive(Clone)]
 pub struct StandardChess {
-    map: HashMap<String, fn(&Board, &Piece, &BigInt, &BigInt) -> bool>,
+    map: HashMap<String, fn(&mut Board, usize, &BigInt, &BigInt) -> bool>,
 }
 
 impl StandardChess {
@@ -30,7 +30,7 @@ impl StandardChess {
 
         me
     }
-    fn add_piecetype(&mut self, name: String, pt: fn(&Board, &Piece, &BigInt, &BigInt) -> bool) {
+    fn add_piecetype(&mut self, name: String, pt: fn(&mut Board, usize, &BigInt, &BigInt) -> bool) {
         self.map.insert(name, pt);
     }
     fn build_piece(
@@ -44,22 +44,23 @@ impl StandardChess {
     }
 
 }
-fn is_pawn_move_legal(board: &Board, p: &Piece, to_rank: &BigInt, to_file: &BigInt) -> bool {
-    if p.get_file() == to_file && to_rank == &(p.get_rank() + 1) {
+fn is_pawn_move_legal(board: &mut Board, i: usize, to_rank: &BigInt, to_file: &BigInt) -> bool {
+    let dir = if board.pieces[i].get_color() == Color::Black {1}else{-1};
+    if board.pieces[i].get_file() == to_file && to_rank == &(board.pieces[i].get_rank() + dir) {
         //single move
         if let None = board.get_piece_at(to_rank, to_file) {
             return true;
         }
     }
-    if p.get_file() == to_file && to_rank == &(p.get_rank() + 2) && !p.has_moved() {
+    if board.pieces[i].get_file() == to_file && to_rank == &(board.pieces[i].get_rank() + dir*2) && !board.pieces[i].has_moved() {
         //double move at start
         if let None = board.get_piece_at(to_rank, to_file) {
-            if let None = board.get_piece_at(&(p.get_rank() + 1), to_file) {
+            if let None = board.get_piece_at(&(board.pieces[i].get_rank() + dir), to_file) {
                 return true;
             }
         }
     }
-    if (p.get_file() - to_file).abs() == 1.into() && to_rank == &(p.get_rank() + 1) {
+    if (board.pieces[i].get_file() - to_file).abs() == 1.into() && to_rank == &(board.pieces[i].get_rank() + dir) {
         //take diagonally
         if let Some(_) = board.get_piece_at(to_rank, to_file) {
             return true;
@@ -67,7 +68,8 @@ fn is_pawn_move_legal(board: &Board, p: &Piece, to_rank: &BigInt, to_file: &BigI
     }
     false
 }
-fn is_knight_move_legal(board: &Board, p: &Piece, to_rank: &BigInt, to_file: &BigInt) -> bool {
+fn is_knight_move_legal(board: &mut Board, i: usize, to_rank: &BigInt, to_file: &BigInt) -> bool {
+    let p = board.pieces.get(i).unwrap();
     let df = p.get_file() - to_file;
     let dr = p.get_rank() - to_rank;
     if dr.abs() == 1.into() {
@@ -78,26 +80,28 @@ fn is_knight_move_legal(board: &Board, p: &Piece, to_rank: &BigInt, to_file: &Bi
         false
     }
 }
-fn is_rook_move_legal(board: &Board, p: &Piece, to_rank: &BigInt, to_file: &BigInt) -> bool {
-    if p.get_file() != to_file && to_rank != p.get_rank() {
+fn is_rook_move_legal(board: &mut Board, i: usize, to_rank: &BigInt, to_file: &BigInt) -> bool {
+    if board.pieces[i].get_file() != to_file && to_rank != board.pieces[i].get_rank() {
         return false;
     }
-    board.get_collision(p.get_rank(), p.get_file(), to_rank, to_file)
+    board.get_collision(&board.pieces[i].get_rank().clone(), &board.pieces[i].get_file().clone(), to_rank, to_file)
 }
-fn is_bishop_move_legal(board: &Board, p: &Piece, to_rank: &BigInt, to_file: &BigInt) -> bool {
+fn is_bishop_move_legal(board: &mut Board, i: usize, to_rank: &BigInt, to_file: &BigInt) -> bool {
+    let p = board.pieces.get(i).unwrap();
     if (p.get_rank() - to_rank).abs() != (p.get_file() - to_file).abs() {
         return false;
     }
-    board.get_collision(p.get_rank(), p.get_file(), to_rank, to_file)
+    board.get_collision(&p.get_rank().clone(), &p.get_file().clone(), to_rank, to_file)
 }
-fn is_queen_move_legal(board: &Board, p: &Piece, to_rank: &BigInt, to_file: &BigInt) -> bool {
-    is_bishop_move_legal(board, p, to_rank, to_file)
-        || is_rook_move_legal(board, p, to_rank, to_file)
+fn is_queen_move_legal(board: &mut Board, i: usize, to_rank: &BigInt, to_file: &BigInt) -> bool {
+    let p = board.pieces.get(i).unwrap();
+    is_bishop_move_legal(board, i, to_rank, to_file)
+        || is_rook_move_legal(board, i, to_rank, to_file)
 }
-fn is_king_move_legal(board: &Board, p: &Piece, to_rank: &BigInt, to_file: &BigInt) -> bool {
-    is_queen_move_legal(board, p, to_rank, to_file)
-        && (p.get_rank() - to_rank).abs() <= 1.into()
-        && (p.get_file() - to_file).abs() <= 1.into()
+fn is_king_move_legal(board: &mut Board, i: usize, to_rank: &BigInt, to_file: &BigInt) -> bool {
+    is_queen_move_legal(board, i, to_rank, to_file)
+        && (board.pieces[i].get_rank() - to_rank).abs() <= 1.into()
+        && (board.pieces[i].get_file() - to_file).abs() <= 1.into()
 }
 #[test]
 fn test_pawns() {
@@ -105,9 +109,9 @@ fn test_pawns() {
     let pm = StandardChess::new();
     b.place_piece(pm.build_piece(&"pawn".into(), Color::White, 1.into(), 1.into()).unwrap());
 
-    assert!(b.is_move_legal(&pm, &1.into(), &1.into(), &2.into(), &1.into()));
-    assert!(b.is_move_legal(&pm, &1.into(), &1.into(), &3.into(), &1.into()));
-    assert!(!b.is_move_legal(&pm, &1.into(), &1.into(), &4.into(), &1.into()));
+    assert!(Board::is_move_legal(&mut b,&pm, &1.into(), &1.into(), &2.into(), &1.into()));
+    assert!(Board::is_move_legal(&mut b,&pm, &1.into(), &1.into(), &3.into(), &1.into()));
+    assert!(!Board::is_move_legal(&mut b,&pm, &1.into(), &1.into(), &4.into(), &1.into()));
 }
 
 #[test]
@@ -117,9 +121,9 @@ fn test_knights() {
     b.place_piece(pm.build_piece(&"knight".into(), Color::White, 0.into(), 1.into()).unwrap());
     b.place_piece(pm.build_piece(&"knight".into(), Color::White, 0.into(), 6.into()).unwrap());
 
-    assert!(b.is_move_legal(&pm, &0.into(), &1.into(), &2.into(), &2.into()));
-    assert!(b.is_move_legal(&pm, &0.into(), &6.into(), &2.into(), &7.into()));
-    assert!(!b.is_move_legal(&pm, &0.into(), &1.into(), &4.into(), &1.into()));
+    assert!(Board::is_move_legal(&mut b, &pm, &0.into(), &1.into(), &2.into(), &2.into()));
+    assert!(Board::is_move_legal(&mut b, &pm, &0.into(), &6.into(), &2.into(), &7.into()));
+    assert!(Board::is_move_legal(&mut b, &pm, &0.into(), &1.into(), &4.into(), &1.into()));
 }
 
 #[test]
@@ -129,10 +133,10 @@ fn test_rooks() {
     b.place_piece(pm.build_piece(&"rook".into(), Color::White, 0.into(), 0.into()).unwrap());
     b.place_piece(pm.build_piece(&"pawn".into(), Color::White, 1.into(), 0.into()).unwrap());
 
-    assert!(b.is_move_legal(&pm, &0.into(), &0.into(), &(-4).into(), &0.into()));
-    assert!(b.is_move_legal(&pm, &0.into(), &0.into(), &0.into(), &(-4).into()));
-    assert!(!b.is_move_legal(&pm, &0.into(), &0.into(), &(-4).into(), &(-4).into()));
-    assert!(!b.is_move_legal(&pm, &0.into(), &0.into(), &3.into(), &0.into()));
+    assert!(Board::is_move_legal(&mut b,&pm, &0.into(), &0.into(), &(-4).into(), &0.into()));
+    assert!(Board::is_move_legal(&mut b,&pm, &0.into(), &0.into(), &0.into(), &(-4).into()));
+    assert!(!Board::is_move_legal(&mut b,&pm, &0.into(), &0.into(), &(-4).into(), &(-4).into()));
+    assert!(!Board::is_move_legal(&mut b,&pm, &0.into(), &0.into(), &3.into(), &0.into()));
 }
 #[test]
 fn test_bishops() {
@@ -140,14 +144,15 @@ fn test_bishops() {
     let pm = StandardChess::new();
     b.place_piece(pm.build_piece(&"bishop".into(), Color::White, 0.into(), 2.into()).unwrap());
 
-    assert!(b.is_move_legal(&pm, &0.into(), &2.into(), &(-2).into(), &(0).into()));
-    assert!(b.is_move_legal(&pm, &0.into(), &2.into(), &(-6).into(), &(-4).into()));
-    assert!(!b.is_move_legal(&pm, &0.into(), &2.into(), &0.into(), &(-4).into()));
-    assert!(!b.is_move_legal(&pm, &0.into(), &2.into(), &4.into(), &2.into()));
+    assert!(Board::is_move_legal(&mut b,&pm, &0.into(), &2.into(), &(-2).into(), &(0).into()));
+    assert!(Board::is_move_legal(&mut b,&pm, &0.into(), &2.into(), &(-6).into(), &(-4).into()));
+    assert!(!Board::is_move_legal(&mut b,&pm, &0.into(), &2.into(), &0.into(), &(-4).into()));
+    assert!(!Board::is_move_legal(&mut b,&pm, &0.into(), &2.into(), &4.into(), &2.into()));
 }
 
 impl PieceRules for StandardChess {
-    fn can_move(&self, board: &Board, piece: &Piece, to_rank: &BigInt, to_file: &BigInt) -> bool {
-        self.map.get(piece.get_type()).unwrap()(board, piece, to_rank, to_file)
+    fn can_move(&self, board: &mut Board, i: usize, to_rank: &BigInt, to_file: &BigInt) -> bool {
+        let piece = board.pieces.get(i).unwrap();
+        self.map.get(piece.get_type()).unwrap()(board, i, to_rank, to_file)
     }
 }

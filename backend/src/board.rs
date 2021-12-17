@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::pawn_rank::PawnRank;
 use crate::piece::{Color, Piece};
 use crate::piece_rules::{PieceRules, StandardChess};
+use crate::piece_serializer::piece_serialize;
 use num_bigint::BigInt;
 use num_traits::Signed;
 pub const STANDARD_BOARD_SIZE: i32 = 8;
@@ -34,15 +35,17 @@ impl Board {
         let x = piece;
         self.pieces.push(x);
     }
-    pub fn get_piece_at(&self, rank: &BigInt, file: &BigInt) -> Option<&Piece> {
-        for p in &self.pieces {
-            if p.get_rank() == rank && p.get_file() == file {
-                return Some(&p);
-            }
+    pub fn do_move(&mut self, rank: &BigInt, file: &BigInt, to_rank: &BigInt, to_file: &BigInt) -> Option<usize> {
+        let from = self.get_piece_at(rank, file)?;
+        if let Some(to) = self.get_piece_at(to_rank, to_file) {
+            self.pieces.get_mut(to).unwrap().capture();
         }
+        let p = self.pieces.get_mut(from).unwrap();
+        p.goto(to_rank, to_file);
+        println!("{}", piece_serialize(p));
         None
     }
-    pub fn get_piece_or_pawn_at(&mut self, rank: &BigInt, file: &BigInt) -> Option<&Piece> {
+    pub fn get_piece_at(&mut self, rank: &BigInt, file: &BigInt) -> Option<usize> {
         if *rank == 1.into() && !self.black_pawns.has_moved(file) {
             self.black_pawns.set_moved(file);
             self.place_piece(Piece::new("pawn".to_string(), Color::Black, rank.clone(), file.clone()));
@@ -52,13 +55,15 @@ impl Board {
             self.place_piece(Piece::new("pawn".to_string(), Color::White, rank.clone(), file.clone()));
 
         }
-        if let Some(x) = self.get_piece_at(rank, file) {
-            return Some(x);
+        for i in 0..self.pieces.len() {
+            if self.pieces[i].get_rank() == rank && self.pieces[i].get_file() == file && !self.pieces[i].is_captured() {
+                return Some(i);
+            }
         }
         None
     }
     pub fn get_collision(
-        &self,
+        &mut self,
         from_rank: &BigInt,
         from_file: &BigInt,
         to_rank: &BigInt,
@@ -88,7 +93,7 @@ impl Board {
         true
     }
     pub fn is_move_legal<T: PieceRules>(
-        &self,
+        s: &mut Board,
         rules: &T,
         from_rank: &BigInt,
         from_file: &BigInt,
@@ -98,10 +103,10 @@ impl Board {
         if from_rank == to_rank && from_file == to_file {
             return false;
         }
-        if let Some(p) = self.get_piece_at(from_rank, from_file) {
-            let good_so_far = rules.can_move(&self, p, to_rank, to_file);
-            if let Some(other) = self.get_piece_at(to_rank, to_file) {
-                if p.get_color() == other.get_color() {
+        if let Some(p) = s.get_piece_at(from_rank, from_file) {
+            let good_so_far = rules.can_move( s, p, to_rank, to_file);
+            if let Some(other) = s.get_piece_at(to_rank, to_file) {
+                if s.pieces[p].get_color() == s.pieces[other].get_color() {
                     return false;
                 }
             }
@@ -111,3 +116,4 @@ impl Board {
         }
     }
 }
+
