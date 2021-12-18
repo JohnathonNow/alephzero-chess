@@ -1,8 +1,6 @@
-use std::{collections::HashSet, fmt, cell::{Cell, RefCell}};
+use std::{cell::RefCell, collections::HashSet};
 
-use crate::piece::{Color, Piece};
 use num_bigint::BigInt;
-use num_traits::Signed;
 
 pub struct PawnRank {
     /// PawnRank tracks the movement of the infinite number of pieces from a rank
@@ -25,6 +23,11 @@ impl PawnRank {
 
 impl ToString for PawnRank {
     fn to_string(&self) -> String {
-        self.moved.borrow().iter().map(|x| x.to_string()).collect::<Vec<String>>().join(",")
+        self.moved
+            .borrow()
+            .iter()
+            .map(|x| x.to_string())
+            .collect::<Vec<String>>()
+            .join(",")
     }
 }

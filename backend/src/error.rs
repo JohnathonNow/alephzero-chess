@@ -1,3 +1,4 @@
+#[cfg(feature = "server")]
 use actix_web::{http::StatusCode, HttpResponse, ResponseError};
 
 #[derive(Debug)]
@@ -21,9 +22,7 @@ impl ResponseError for Error {
     }
 }
 impl Error {
-
-
-pub(crate) fn new() -> Self {
-    Self {s: "bob".into()}
-}
+    pub(crate) fn new() -> Self {
+        Self { s: "bob".into() }
+    }
 }

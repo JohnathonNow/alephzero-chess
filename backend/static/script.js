@@ -1,3 +1,6 @@
+import init, {WasmBoard} from "./pkg/backend.js";
+
+
 var xCord = 0;
 var yCord = 0;
 var cell_prefix = "square_";
@@ -12,6 +15,7 @@ var scrollFromYS = null;
 
 var pieces = [];
 var movable = [];
+var board = null;
 
 function displayed(x, y) {
     x -= xCord;
@@ -134,7 +138,8 @@ function moveEnd(e) {
     var y = parseInt(e.target['data-y']) + yCord;
     var grabbedPiece = getPiece(x, y);
     if (toMove && toMove != grabbedPiece) { 
-        if (ismovable(toMove, x, y)  && (!grabbedPiece || grabbedPiece.color != toMove.color)) {
+        if (ismovable(e)  && (!grabbedPiece || grabbedPiece.color != toMove.color)) {
+            make_move(x, y);
             toMove.x = x;
             toMove.y = y;
             if (grabbedPiece) {
@@ -164,140 +169,8 @@ function startTouch(e) {
     scrollFromYS = parseInt(document.getElementById("yport").value);
 }
 
-function ismovable(piece, xx, yy) {
-    var x = piece.x;
-    var y = piece.y;
-    switch (piece.type) {
-        case "black_pawn":
-            if (x == xx && y + 1 == yy) {
-                return true;
-            }
-            if (x == xx && y + 2 == yy && y == 1) {
-                return true;
-            }
-            if (Math.abs(x - xx) <= 1 && y + 1 == yy && getPiece(xx, yy)) {
-                return true;
-            }
-            break;
-        case "white_pawn":
-            if (x == xx && y - 1 == yy) {
-                return true;
-            }
-            if (x == xx && y - 2 == yy && y == 6) {
-                return true;
-            }
-            if (Math.abs(x - xx) <= 1 && y - 1 == yy && getPiece(xx, yy)) {
-                return true;
-            }
-            break;
-        case "black_queen":
-        case "white_queen":
-            for (var i = 1; i < 8; i += 1) {
-                if (x + i == xx && y + i == yy) { return true; }
-                if (getPiece(x + i, y + i)) { break; }
-            }
-            for (var i = 1; i < 8; i += 1) {
-                if (x + i == xx && y - i == yy) { return true; }
-                if (getPiece(x + i, y - i)) { break; }
-            }
-            for (var i = 1; i < 8; i += 1) {
-                if (x - i == xx && y - i == yy) { return true; }
-                if (getPiece(x - i, y - i)) { break; }
-            }
-            for (var i = 1; i < 8; i += 1) {
-                if (x - i == xx && y + i == yy) { return true; }
-                if (getPiece(x - i, y + i)) { break; }
-            }
-            for (var i = 1; i < 8; i += 1) {
-                if (x + i == xx && y == yy) { return true; }
-                if (getPiece(x + i, y)) { break; }
-            }
-            for (var i = 1; i < 8; i += 1) {
-                if (x == xx && y - i == yy) { return true; }
-                if (getPiece(x, y - i)) { break; }
-            }
-            for (var i = 1; i < 8; i += 1) {
-                if (x - i == xx && y == yy) { return true; }
-                if (getPiece(x - i, y)) { break; }
-            }
-            for (var i = 1; i < 8; i += 1) {
-                if (x == xx && y + i == yy) { return true; }
-                if (getPiece(x, y + i)) { break; }
-            }
-            break;
-        case "black_bishop":
-        case "white_bishop":
-            for (var i = 1; i < 8; i += 1) {
-                if (x + i == xx && y + i == yy) { return true; }
-                if (getPiece(x + i, y + i)) { break; }
-            }
-            for (var i = 1; i < 8; i += 1) {
-                if (x + i == xx && y - i == yy) { return true; }
-                if (getPiece(x + i, y - i)) { break; }
-            }
-            for (var i = 1; i < 8; i += 1) {
-                if (x - i == xx && y - i == yy) { return true; }
-                if (getPiece(x - i, y - i)) { break; }
-            }
-            for (var i = 1; i < 8; i += 1) {
-                if (x - i == xx && y + i == yy) { return true; }
-                if (getPiece(x - i, y + i)) { break; }
-            }
-            break;
-        case "black_rook":
-        case "white_rook":
-            for (var i = 1; i < 8; i += 1) {
-                if (x + i == xx && y == yy) { return true; }
-                if (getPiece(x + i, y)) { break; }
-            }
-            for (var i = 1; i < 8; i += 1) {
-                if (x == xx && y - i == yy) { return true; }
-                if (getPiece(x, y - i)) { break; }
-            }
-            for (var i = 1; i < 8; i += 1) {
-                if (x - i == xx && y == yy) { return true; }
-                if (getPiece(x - i, y)) { break; }
-            }
-            for (var i = 1; i < 8; i += 1) {
-                if (x == xx && y + i == yy) { return true; }
-                if (getPiece(x, y + i)) { break; }
-            }
-            break;
-        case "black_knight":
-        case "white_knight":
-            if (x - 1 == xx && y + 2 == yy) {
-                return true;
-            }
-            if (x - 1 == xx && y - 2 == yy) {
-                return true;
-            }
-            if (x + 1 == xx && y - 2 == yy) {
-                return true;
-            }
-            if (x + 1 == xx && y + 2 == yy) {
-                return true;
-            }
-            if (x - 2 == xx && y - 1 == yy) {
-                return true;
-            }
-            if (x - 2 == xx && y + 1 == yy) {
-                return true;
-            }
-            if (x + 2 == xx && y - 1 == yy) {
-                return true;
-            }
-            if (x + 2 == xx && y + 1 == yy) {
-                return true;
-            }
-            break;
-        case "white_king":
-        case "black_king":
-            if (Math.abs(x - xx) <= 1 && Math.abs(y - yy) <= 1) {
-                return true;
-            }
-            break;
-    }
-    return false;
+function ismovable(e) {
+    return e.target.classList.contains("movable");
 }
 
 function getBoard() {
@@ -311,6 +184,9 @@ function getBoard() {
     .then(data => {
       console.log(data);
       pieces = data.pieces;
+      for (var i = 0; i < pieces.length; i++) {
+          board.place_piece(pieces[i].piece, pieces[i].color == "white", pieces[i].y, pieces[i].x);
+      }
       madePawnsBlack.clear();
       madePawnsWhite.clear();
       for (var i = 0; i < data.black_pawns.length; i++) {
@@ -326,6 +202,7 @@ function getBoard() {
 
 function getMoves() {
     ///legal/{px}/{py}/{wx}/{wy}/{zoom}
+    /*
     fetch("/legal/"+toMove.y+"/"+toMove.x+"/"+yCord+"/"+xCord+"/"+size)
     .then(response => {
       if (!response.ok) {
@@ -338,5 +215,32 @@ function getMoves() {
       movable = data;
       render();
     })
+    .catch(error => console.log(error))*/
+    movable = JSON.parse(board.get_legal_moves(""+toMove.y, ""+toMove.x, ""+yCord, ""+xCord, ""+size));
+}
+
+function make_move(x, y) {
+    var tomx = toMove.x;
+    var tomy = toMove.y;
+    fetch("/move/"+toMove.y+"/"+toMove.x+"/"+y+"/"+x)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`Request failed with status ${response.status}`)
+      }
+      return response.text()
+    })
+    .then(data => {
+      board.do_move(""+tomy, ""+tomx, ""+y, ""+x);
+      console.log(data);
+      render();
+    })
     .catch(error => console.log(error))
 }
+
+init()
+  .then(() => {
+    board = new WasmBoard();
+    console.log(board);
+    console.log(JSON.parse(board.get_legal_moves("1", "4", "0", "0", "8")));
+
+  });
