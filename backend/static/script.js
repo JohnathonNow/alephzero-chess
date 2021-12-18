@@ -134,7 +134,8 @@ function moveEnd(e) {
     var y = parseInt(e.target['data-y']) + yCord;
     var grabbedPiece = getPiece(x, y);
     if (toMove && toMove != grabbedPiece) { 
-        if (ismovable(toMove, x, y)  && (!grabbedPiece || grabbedPiece.color != toMove.color)) {
+        if (ismovable(e)  && (!grabbedPiece || grabbedPiece.color != toMove.color)) {
+            make_move(x, y);
             toMove.x = x;
             toMove.y = y;
             if (grabbedPiece) {
@@ -164,140 +165,8 @@ function startTouch(e) {
     scrollFromYS = parseInt(document.getElementById("yport").value);
 }
 
-function ismovable(piece, xx, yy) {
-    var x = piece.x;
-    var y = piece.y;
-    switch (piece.type) {
-        case "black_pawn":
-            if (x == xx && y + 1 == yy) {
-                return true;
-            }
-            if (x == xx && y + 2 == yy && y == 1) {
-                return true;
-            }
-            if (Math.abs(x - xx) <= 1 && y + 1 == yy && getPiece(xx, yy)) {
-                return true;
-            }
-            break;
-        case "white_pawn":
-            if (x == xx && y - 1 == yy) {
-                return true;
-            }
-            if (x == xx && y - 2 == yy && y == 6) {
-                return true;
-            }
-            if (Math.abs(x - xx) <= 1 && y - 1 == yy && getPiece(xx, yy)) {
-                return true;
-            }
-            break;
-        case "black_queen":
-        case "white_queen":
-            for (var i = 1; i < 8; i += 1) {
-                if (x + i == xx && y + i == yy) { return true; }
-                if (getPiece(x + i, y + i)) { break; }
-            }
-            for (var i = 1; i < 8; i += 1) {
-                if (x + i == xx && y - i == yy) { return true; }
-                if (getPiece(x + i, y - i)) { break; }
-            }
-            for (var i = 1; i < 8; i += 1) {
-                if (x - i == xx && y - i == yy) { return true; }
-                if (getPiece(x - i, y - i)) { break; }
-            }
-            for (var i = 1; i < 8; i += 1) {
-                if (x - i == xx && y + i == yy) { return true; }
-                if (getPiece(x - i, y + i)) { break; }
-            }
-            for (var i = 1; i < 8; i += 1) {
-                if (x + i == xx && y == yy) { return true; }
-                if (getPiece(x + i, y)) { break; }
-            }
-            for (var i = 1; i < 8; i += 1) {
-                if (x == xx && y - i == yy) { return true; }
-                if (getPiece(x, y - i)) { break; }
-            }
-            for (var i = 1; i < 8; i += 1) {
-                if (x - i == xx && y == yy) { return true; }
-                if (getPiece(x - i, y)) { break; }
-            }
-            for (var i = 1; i < 8; i += 1) {
-                if (x == xx && y + i == yy) { return true; }
-                if (getPiece(x, y + i)) { break; }
-            }
-            break;
-        case "black_bishop":
-        case "white_bishop":
-            for (var i = 1; i < 8; i += 1) {
-                if (x + i == xx && y + i == yy) { return true; }
-                if (getPiece(x + i, y + i)) { break; }
-            }
-            for (var i = 1; i < 8; i += 1) {
-                if (x + i == xx && y - i == yy) { return true; }
-                if (getPiece(x + i, y - i)) { break; }
-            }
-            for (var i = 1; i < 8; i += 1) {
-                if (x - i == xx && y - i == yy) { return true; }
-                if (getPiece(x - i, y - i)) { break; }
-            }
-            for (var i = 1; i < 8; i += 1) {
-                if (x - i == xx && y + i == yy) { return true; }
-                if (getPiece(x - i, y + i)) { break; }
-            }
-            break;
-        case "black_rook":
-        case "white_rook":
-            for (var i = 1; i < 8; i += 1) {
-                if (x + i == xx && y == yy) { return true; }
-                if (getPiece(x + i, y)) { break; }
-            }
-            for (var i = 1; i < 8; i += 1) {
-                if (x == xx && y - i == yy) { return true; }
-                if (getPiece(x, y - i)) { break; }
-            }
-            for (var i = 1; i < 8; i += 1) {
-                if (x - i == xx && y == yy) { return true; }
-                if (getPiece(x - i, y)) { break; }
-            }
-            for (var i = 1; i < 8; i += 1) {
-                if (x == xx && y + i == yy) { return true; }
-                if (getPiece(x, y + i)) { break; }
-            }
-            break;
-        case "black_knight":
-        case "white_knight":
-            if (x - 1 == xx && y + 2 == yy) {
-                return true;
-            }
-            if (x - 1 == xx && y - 2 == yy) {
-                return true;
-            }
-            if (x + 1 == xx && y - 2 == yy) {
-                return true;
-            }
-            if (x + 1 == xx && y + 2 == yy) {
-                return true;
-            }
-            if (x - 2 == xx && y - 1 == yy) {
-                return true;
-            }
-            if (x - 2 == xx && y + 1 == yy) {
-                return true;
-            }
-            if (x + 2 == xx && y - 1 == yy) {
-                return true;
-            }
-            if (x + 2 == xx && y + 1 == yy) {
-                return true;
-            }
-            break;
-        case "white_king":
-        case "black_king":
-            if (Math.abs(x - xx) <= 1 && Math.abs(y - yy) <= 1) {
-                return true;
-            }
-            break;
-    }
-    return false;
+function ismovable(e) {
+    return e.target.classList.contains("movable");
 }
 
 function getBoard() {
@@ -336,6 +205,21 @@ function getMoves() {
     .then(data => {
       console.log(data);
       movable = data;
+      render();
+    })
+    .catch(error => console.log(error))
+}
+
+function make_move(x, y) {
+    fetch("/move/"+toMove.y+"/"+toMove.x+"/"+y+"/"+x)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`Request failed with status ${response.status}`)
+      }
+      return response.text()
+    })
+    .then(data => {
+      console.log(data);
       render();
     })
     .catch(error => console.log(error))

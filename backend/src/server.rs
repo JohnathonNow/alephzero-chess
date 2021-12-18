@@ -5,21 +5,15 @@ use actix_web::{web, App, HttpServer};
 
 use actix_web::{get, put, HttpResponse};
 use num_bigint::BigInt;
-use piece::Piece;
+use crate::piece;
+use crate::piece::Piece;
 use rusqlite::Connection;
 use crate::piece_rules::StandardChess;
 
-mod piece;
-mod board;
-mod piece_rules;
-mod pawn_rank;
-mod board_serializer;
-mod error;
-mod piece_serializer;
 
-use board::Board;
-use board_serializer::board_serialize;
-use error::*;
+use crate::board::Board;
+use crate::board_serializer::board_serialize;
+use crate::error::*;
 use actix_files as fs;
 
 #[actix_web::main]
@@ -80,7 +74,7 @@ pub async fn get_legal(
     while xx <  wwx {
         let mut yy = bigwy.clone();
         while yy < wwy {
-            if Board::is_move_legal::<StandardChess>(&mut b, &rules, &bigpx, &bigpy, &xx, &yy) {
+            if Board::is_move_legal(&mut b, &rules, &bigpx, &bigpy, &xx, &yy) {
                 results.push(format!("[{}, {}]", xx, yy));
             }
             yy += 1;
@@ -103,7 +97,7 @@ pub async fn get_move(
 
     let mut b = board.lock().unwrap();
    
-    if Board::is_move_legal::<StandardChess>(&mut b, &rules, &bigpx, &bigpy, &bigdx, &bigdy) {
+    if Board::is_move_legal(&mut b, &rules, &bigpx, &bigpy, &bigdx, &bigdy) {
         b.do_move(&bigpx, &bigpy, &bigdx, &bigdy);
     }
    
