@@ -13,12 +13,12 @@ pub const STANDARD_BOARD_SIZE: i32 = 8;
 
 #[wasm_bindgen]
 pub struct Board{
-    turn: BigInt,
+    pub(crate) turn: BigInt,
     pub white_can_castle: bool,
     pub black_can_castle: bool,
     pub(crate) pieces: Vec<Piece>,
-    white_pawns: PawnRank,
-    black_pawns: PawnRank,
+    pub(crate) white_pawns: PawnRank,
+    pub(crate) black_pawns: PawnRank,
 
 }
 

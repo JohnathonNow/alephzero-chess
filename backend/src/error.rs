@@ -1,3 +1,4 @@
+#[cfg(feature = "server")]
 use actix_web::{http::StatusCode, HttpResponse, ResponseError};
 
 #[derive(Debug)]

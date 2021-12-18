@@ -1,12 +1,20 @@
 use std::str::FromStr;
 use std::sync::Arc;
 use std::sync::Mutex;
+mod error;
+#[cfg(feature = "server")]
 use actix_web::{web, App, HttpServer};
-
+#[cfg(feature = "server")]
 use actix_web::{get, put, HttpResponse};
 use num_bigint::BigInt;
-use crate::piece;
+mod piece;
+mod board;
+mod piece_rules;
+mod pawn_rank;
+mod board_serializer;
+mod piece_serializer;
 use crate::piece::Piece;
+#[cfg(feature = "server")]
 use rusqlite::Connection;
 use crate::piece_rules::StandardChess;
 
@@ -14,6 +22,7 @@ use crate::piece_rules::StandardChess;
 use crate::board::Board;
 use crate::board_serializer::board_serialize;
 use crate::error::*;
+#[cfg(feature = "server")]
 use actix_files as fs;
 
 #[actix_web::main]
