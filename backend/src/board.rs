@@ -71,6 +71,35 @@ impl WasmBoard {
             &to_file.parse::<BigInt>().ok()?,
         ))
     }
+    pub fn get_legal_moves(
+        &mut self,
+        srank: String,
+        sfile: String,
+        swinx: String,
+        swiny: String,
+        szoom: String
+    ) -> Option<String> {
+    let rank = srank.parse::<BigInt>().ok()?;
+    let file = sfile.parse::<BigInt>().ok()?;
+    let winx = swinx.parse::<BigInt>().ok()?;
+    let winy = swiny.parse::<BigInt>().ok()?;
+    let zoom = szoom.parse::<BigInt>().ok()?;
+    let mut xx = winx.clone();
+    let winxwidth = winx + zoom.clone();
+    let winyheight = winy.clone() + zoom;
+    let mut results = Vec::new();
+    while xx < winxwidth {
+        let mut yy = winy.clone();
+        while yy < winyheight {
+            if Board::is_move_legal(&mut self.board, &self.rules, &rank, &file, &xx, &yy) {
+                results.push(format!("[{}, {}]", xx, yy));
+            }
+            yy += 1;
+        }
+        xx += 1;
+    }
+    Some(format!("[{}]", results.join(",")))
+    }
 }
 
 pub struct Board {

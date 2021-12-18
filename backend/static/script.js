@@ -1,3 +1,6 @@
+import init, {WasmBoard} from "./pkg/backend.js";
+
+
 var xCord = 0;
 var yCord = 0;
 var cell_prefix = "square_";
@@ -12,6 +15,7 @@ var scrollFromYS = null;
 
 var pieces = [];
 var movable = [];
+var board = null;
 
 function displayed(x, y) {
     x -= xCord;
@@ -180,6 +184,9 @@ function getBoard() {
     .then(data => {
       console.log(data);
       pieces = data.pieces;
+      for (var i = 0; i < pieces.length; i++) {
+          board.place_piece(pieces[i].piece, pieces[i].color == "white", pieces[i].y, pieces[i].x);
+      }
       madePawnsBlack.clear();
       madePawnsWhite.clear();
       for (var i = 0; i < data.black_pawns.length; i++) {
@@ -195,6 +202,7 @@ function getBoard() {
 
 function getMoves() {
     ///legal/{px}/{py}/{wx}/{wy}/{zoom}
+    /*
     fetch("/legal/"+toMove.y+"/"+toMove.x+"/"+yCord+"/"+xCord+"/"+size)
     .then(response => {
       if (!response.ok) {
@@ -207,10 +215,13 @@ function getMoves() {
       movable = data;
       render();
     })
-    .catch(error => console.log(error))
+    .catch(error => console.log(error))*/
+    movable = JSON.parse(board.get_legal_moves(""+toMove.y, ""+toMove.x, ""+yCord, ""+xCord, ""+size));
 }
 
 function make_move(x, y) {
+    var tomx = toMove.x;
+    var tomy = toMove.y;
     fetch("/move/"+toMove.y+"/"+toMove.x+"/"+y+"/"+x)
     .then(response => {
       if (!response.ok) {
@@ -219,8 +230,17 @@ function make_move(x, y) {
       return response.text()
     })
     .then(data => {
+      board.do_move(""+tomy, ""+tomx, ""+y, ""+x);
       console.log(data);
       render();
     })
     .catch(error => console.log(error))
 }
+
+init()
+  .then(() => {
+    board = new WasmBoard();
+    console.log(board);
+    console.log(JSON.parse(board.get_legal_moves("1", "4", "0", "0", "8")));
+
+  });
