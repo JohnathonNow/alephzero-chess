@@ -22,9 +22,7 @@ impl ResponseError for Error {
     }
 }
 impl Error {
-
-
-pub(crate) fn new() -> Self {
-    Self {s: "bob".into()}
-}
+    pub(crate) fn new() -> Self {
+        Self { s: "bob".into() }
+    }
 }

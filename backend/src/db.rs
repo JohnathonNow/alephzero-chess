@@ -8,7 +8,8 @@ pub fn setup(conn: &mut Connection) -> std::io::Result<()> {
          );
          ",
         params![],
-    ).unwrap();
+    )
+    .unwrap();
     conn.execute(
         "CREATE TABLE IF NOT EXISTS boards (
             id           INTEGER PRIMARY KEY,
@@ -17,6 +18,7 @@ pub fn setup(conn: &mut Connection) -> std::io::Result<()> {
          );
          ",
         params![],
-    ).unwrap();
+    )
+    .unwrap();
     Ok(())
 }

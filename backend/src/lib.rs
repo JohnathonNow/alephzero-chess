@@ -1,7 +1,7 @@
-mod piece;
 pub mod board;
-mod piece_rules;
-mod pawn_rank;
 mod board_serializer;
+mod pawn_rank;
+mod piece;
+mod piece_rules;
 //mod error;
 mod piece_serializer;

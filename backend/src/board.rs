@@ -1,9 +1,9 @@
-use wasm_bindgen::prelude::*;
 use crate::pawn_rank::PawnRank;
 use crate::piece::{Color, Piece};
 use crate::piece_rules::{PieceRules, StandardChess};
 use crate::piece_serializer::piece_serialize;
 use num_bigint::BigInt;
+use wasm_bindgen::prelude::*;
 pub const STANDARD_BOARD_SIZE: i32 = 8;
 
 //#[derive(Serialize, Deserialize)]
@@ -18,35 +18,68 @@ pub struct WasmBoard {
 impl WasmBoard {
     #[wasm_bindgen(constructor)]
     pub fn new() -> Self {
-        Self { board: Board::new(), rules: StandardChess::new() }
+        Self {
+            board: Board::new(),
+            rules: StandardChess::new(),
+        }
     }
-    pub fn place_piece(&mut self, piece: String, white: bool, rank: String, file: String) -> Option<usize> {
-        self.board.place_piece(Piece::new(piece, if white {Color::White} else {Color::Black}, rank.parse::<BigInt>().ok()?, file.parse::<BigInt>().ok()?))
+    pub fn place_piece(
+        &mut self,
+        piece: String,
+        white: bool,
+        rank: String,
+        file: String,
+    ) -> Option<usize> {
+        self.board.place_piece(Piece::new(
+            piece,
+            if white { Color::White } else { Color::Black },
+            rank.parse::<BigInt>().ok()?,
+            file.parse::<BigInt>().ok()?,
+        ))
     }
     pub fn get_piece_at(&mut self, rank: String, file: String) -> Option<usize> {
-        self.board.get_piece_at(&rank.parse::<BigInt>().ok()?, &file.parse::<BigInt>().ok()?)
+        self.board
+            .get_piece_at(&rank.parse::<BigInt>().ok()?, &file.parse::<BigInt>().ok()?)
     }
-    pub fn do_move(&mut self, rank: String, file: String, to_rank: String, to_file: String) -> Option<usize> {
-        self.board.do_move(&rank.parse::<BigInt>().ok()?, &file.parse::<BigInt>().ok()?, &to_rank.parse::<BigInt>().ok()?, &to_file.parse::<BigInt>().ok()?)
+    pub fn do_move(
+        &mut self,
+        rank: String,
+        file: String,
+        to_rank: String,
+        to_file: String,
+    ) -> Option<usize> {
+        self.board.do_move(
+            &rank.parse::<BigInt>().ok()?,
+            &file.parse::<BigInt>().ok()?,
+            &to_rank.parse::<BigInt>().ok()?,
+            &to_file.parse::<BigInt>().ok()?,
+        )
     }
-    pub fn is_move_legal(&mut self,
+    pub fn is_move_legal(
+        &mut self,
         rank: String,
         file: String,
         to_rank: String,
         to_file: String,
     ) -> Option<bool> {
-        Some(Board::is_move_legal(&mut self.board, &self.rules, &rank.parse::<BigInt>().ok()?, &file.parse::<BigInt>().ok()?, &to_rank.parse::<BigInt>().ok()?, &to_file.parse::<BigInt>().ok()?))
+        Some(Board::is_move_legal(
+            &mut self.board,
+            &self.rules,
+            &rank.parse::<BigInt>().ok()?,
+            &file.parse::<BigInt>().ok()?,
+            &to_rank.parse::<BigInt>().ok()?,
+            &to_file.parse::<BigInt>().ok()?,
+        ))
     }
 }
 
-pub struct Board{
+pub struct Board {
     //pub(crate) turn: BigInt,
     pub white_can_castle: bool,
     pub black_can_castle: bool,
     pub(crate) pieces: Vec<Piece>,
     pub(crate) white_pawns: PawnRank,
     pub(crate) black_pawns: PawnRank,
-
 }
 
 impl Board {
@@ -58,14 +91,20 @@ impl Board {
             pieces: Vec::new(),
             white_pawns: PawnRank::new(),
             black_pawns: PawnRank::new(),
-            }
+        }
     }
     pub(crate) fn place_piece(&mut self, piece: Piece) -> Option<usize> {
         let x = piece;
         self.pieces.push(x);
         Some(self.pieces.len() - 1)
     }
-    pub(crate) fn do_move(&mut self, rank: &BigInt, file: &BigInt, to_rank: &BigInt, to_file: &BigInt) -> Option<usize> {
+    pub(crate) fn do_move(
+        &mut self,
+        rank: &BigInt,
+        file: &BigInt,
+        to_rank: &BigInt,
+        to_file: &BigInt,
+    ) -> Option<usize> {
         let from = self.get_piece_at(rank, file)?;
         if let Some(to) = self.get_piece_at(to_rank, to_file) {
             self.pieces.get_mut(to).unwrap().capture();
@@ -78,15 +117,27 @@ impl Board {
     pub(crate) fn get_piece_at(&mut self, rank: &BigInt, file: &BigInt) -> Option<usize> {
         if *rank == 1.into() && !self.black_pawns.has_moved(file) {
             self.black_pawns.set_moved(file);
-            self.place_piece(Piece::new("pawn".to_string(), Color::Black, rank.clone(), file.clone()));
+            self.place_piece(Piece::new(
+                "pawn".to_string(),
+                Color::Black,
+                rank.clone(),
+                file.clone(),
+            ));
         }
         if *rank == 6.into() && !self.white_pawns.has_moved(file) {
             self.white_pawns.set_moved(file);
-            self.place_piece(Piece::new("pawn".to_string(), Color::White, rank.clone(), file.clone()));
-
+            self.place_piece(Piece::new(
+                "pawn".to_string(),
+                Color::White,
+                rank.clone(),
+                file.clone(),
+            ));
         }
         for i in 0..self.pieces.len() {
-            if self.pieces[i].get_rank() == rank && self.pieces[i].get_file() == file && !self.pieces[i].is_captured() {
+            if self.pieces[i].get_rank() == rank
+                && self.pieces[i].get_file() == file
+                && !self.pieces[i].is_captured()
+            {
                 return Some(i);
             }
         }
@@ -134,7 +185,7 @@ impl Board {
             return false;
         }
         if let Some(p) = s.get_piece_at(from_rank, from_file) {
-            let good_so_far = rules.can_move( s, p, to_rank, to_file);
+            let good_so_far = rules.can_move(s, p, to_rank, to_file);
             if let Some(other) = s.get_piece_at(to_rank, to_file) {
                 if s.pieces[p].get_color() == s.pieces[other].get_color() {
                     return false;
@@ -146,4 +197,3 @@ impl Board {
         }
     }
 }
-

@@ -1,4 +1,4 @@
-use std::{collections::HashSet, cell::{RefCell}};
+use std::{cell::RefCell, collections::HashSet};
 
 use num_bigint::BigInt;
 
@@ -23,6 +23,11 @@ impl PawnRank {
 
 impl ToString for PawnRank {
     fn to_string(&self) -> String {
-        self.moved.borrow().iter().map(|x| x.to_string()).collect::<Vec<String>>().join(",")
+        self.moved
+            .borrow()
+            .iter()
+            .map(|x| x.to_string())
+            .collect::<Vec<String>>()
+            .join(",")
     }
 }

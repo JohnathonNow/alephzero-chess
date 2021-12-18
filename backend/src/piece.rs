@@ -11,7 +11,8 @@ impl ToString for Color {
         match self {
             Color::Black => "black",
             Color::White => "white",
-        }.into()
+        }
+        .into()
     }
 }
 
@@ -39,7 +40,7 @@ impl Piece {
     pub fn get_type(&self) -> &String {
         &self.piece
     }
-    #[cfg(not(features="server"))]
+    #[cfg(not(features = "server"))]
     pub fn get_color(&self) -> Color {
         self.color
     }
@@ -52,15 +53,15 @@ impl Piece {
     pub fn is_captured(&self) -> bool {
         self.captured
     }
-    #[cfg(not(features="server"))]
+    #[cfg(not(features = "server"))]
     pub fn has_moved(&self) -> bool {
         self.has_moved
     }
-    #[cfg(not(features="server"))]
+    #[cfg(not(features = "server"))]
     pub(crate) fn capture(&mut self) {
         self.captured = true;
     }
-    #[cfg(not(features="server"))]
+    #[cfg(not(features = "server"))]
     pub(crate) fn goto(&mut self, rank: &BigInt, file: &BigInt) {
         self.rank = rank.clone();
         self.file = file.clone();
