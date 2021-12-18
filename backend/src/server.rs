@@ -5,7 +5,7 @@ mod error;
 #[cfg(feature = "server")]
 use actix_web::{web, App, HttpServer};
 #[cfg(feature = "server")]
-use actix_web::{get, put, HttpResponse};
+use actix_web::{get, HttpResponse};
 use num_bigint::BigInt;
 mod piece;
 mod board;
@@ -14,12 +14,13 @@ mod pawn_rank;
 mod board_serializer;
 mod piece_serializer;
 use crate::piece::Piece;
-#[cfg(feature = "server")]
-use rusqlite::Connection;
+/*#[cfg(feature = "server")]
+use rusqlite::Connection;*/
 use crate::piece_rules::StandardChess;
 
 
 use crate::board::Board;
+#[cfg(feature="server")]
 use crate::board_serializer::board_serialize;
 use crate::error::*;
 #[cfg(feature = "server")]

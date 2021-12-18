@@ -1,19 +1,46 @@
-use std::fmt;
-use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 use crate::pawn_rank::PawnRank;
 use crate::piece::{Color, Piece};
 use crate::piece_rules::{PieceRules, StandardChess};
 use crate::piece_serializer::piece_serialize;
 use num_bigint::BigInt;
-use num_traits::Signed;
 pub const STANDARD_BOARD_SIZE: i32 = 8;
 
 //#[derive(Serialize, Deserialize)]
 
 #[wasm_bindgen]
+pub struct WasmBoard {
+    pub(crate) board: Board,
+    pub(crate) rules: StandardChess,
+}
+
+#[wasm_bindgen]
+impl WasmBoard {
+    #[wasm_bindgen(constructor)]
+    pub fn new() -> Self {
+        Self { board: Board::new(), rules: StandardChess::new() }
+    }
+    pub fn place_piece(&mut self, piece: String, white: bool, rank: String, file: String) -> Option<usize> {
+        self.board.place_piece(Piece::new(piece, if white {Color::White} else {Color::Black}, rank.parse::<BigInt>().ok()?, file.parse::<BigInt>().ok()?))
+    }
+    pub fn get_piece_at(&mut self, rank: String, file: String) -> Option<usize> {
+        self.board.get_piece_at(&rank.parse::<BigInt>().ok()?, &file.parse::<BigInt>().ok()?)
+    }
+    pub fn do_move(&mut self, rank: String, file: String, to_rank: String, to_file: String) -> Option<usize> {
+        self.board.do_move(&rank.parse::<BigInt>().ok()?, &file.parse::<BigInt>().ok()?, &to_rank.parse::<BigInt>().ok()?, &to_file.parse::<BigInt>().ok()?)
+    }
+    pub fn is_move_legal(&mut self,
+        rank: String,
+        file: String,
+        to_rank: String,
+        to_file: String,
+    ) -> Option<bool> {
+        Some(Board::is_move_legal(&mut self.board, &self.rules, &rank.parse::<BigInt>().ok()?, &file.parse::<BigInt>().ok()?, &to_rank.parse::<BigInt>().ok()?, &to_file.parse::<BigInt>().ok()?))
+    }
+}
+
 pub struct Board{
-    pub(crate) turn: BigInt,
+    //pub(crate) turn: BigInt,
     pub white_can_castle: bool,
     pub black_can_castle: bool,
     pub(crate) pieces: Vec<Piece>,
@@ -22,25 +49,16 @@ pub struct Board{
 
 }
 
-#[wasm_bindgen]
 impl Board {
-    #[wasm_bindgen(constructor)]
     pub fn new() -> Self {
         Self {
-            turn: 0.into(),
+            //turn: 0.into(),
             white_can_castle: true,
             black_can_castle: true,
             pieces: Vec::new(),
             white_pawns: PawnRank::new(),
             black_pawns: PawnRank::new(),
-
-                }
-    }
-    pub fn put_piece(&mut self, piece: String, white: bool, rank: String, file: String) -> Option<usize> {
-        self.place_piece(Piece::new(piece, if white {Color::White} else {Color::Black}, rank.parse::<BigInt>().ok()?, file.parse::<BigInt>().ok()?))
-    }
-    pub fn get_at(&mut self, rank: String, file: String) -> Option<usize> {
-        self.get_piece_at(&rank.parse::<BigInt>().ok()?, &file.parse::<BigInt>().ok()?)
+            }
     }
     pub(crate) fn place_piece(&mut self, piece: Piece) -> Option<usize> {
         let x = piece;
@@ -81,52 +99,6 @@ impl Board {
         to_rank: &BigInt,
         to_file: &BigInt,
     ) -> bool {
-        let dr = match (to_rank - from_rank).sign() {
-            num_bigint::Sign::Minus => -1,
-            num_bigint::Sign::NoSign => 0,
-            num_bigint::Sign::Plus => 1,
-        };
-        let df = match (to_file - from_file).sign() {
-            num_bigint::Sign::Minus => -1,
-            num_bigint::Sign::NoSign => 0,
-            num_bigint::Sign::Plus => 1,
-        };
-        let mut rank = from_rank.clone();
-        let mut file = from_file.clone();
-        rank += dr;
-        file += df;
-        while &rank != to_rank || &file != to_file {
-            if let Some(_) = self.get_piece_at(&rank, &file) {
-                return false;
-            }
-            rank += dr;
-            file += df;
-        }
-        true
-    }
-    pub(crate) fn get_file(&self, i: usize) -> BigInt {
-        self.pieces[i].get_file().clone()
-    }
-    pub(crate) fn get_rank(&self, i: usize) -> BigInt {
-        self.pieces[i].get_rank().clone()
-    }
-    pub(crate) fn get_color(&self, i: usize) -> Color {
-        self.pieces[i].get_color()
-    }
-    pub(crate)  fn has_moved(&self, i: usize) -> bool {
-        self.pieces[i].has_moved()
-    }
-    pub(crate)  fn get_type(&self, i: usize) -> String {
-        self.pieces[i].get_type().clone()
-    }
-    pub(crate)  fn get_collision_piece(
-        &mut self,
-        from: usize,
-        to_rank: &BigInt,
-        to_file: &BigInt,
-    ) -> bool {
-        let from_rank = self.pieces[from].get_rank();
-        let from_file = self.pieces[from].get_file();
         let dr = match (to_rank - from_rank).sign() {
             num_bigint::Sign::Minus => -1,
             num_bigint::Sign::NoSign => 0,

@@ -5,8 +5,10 @@ use num_traits::Signed;
 
 use crate::{
     board::{Board, STANDARD_BOARD_SIZE},
-    piece::{Color, Piece},
+    piece::{Color},
 };
+#[cfg(test)]
+use crate::piece::Piece;
 
 pub trait PieceRules {
     fn can_move(&self, board: &mut Board, i: usize, to_rank: &BigInt, to_file: &BigInt) -> bool;
@@ -21,18 +23,19 @@ impl StandardChess {
     pub fn new() -> Self {
         let map = HashMap::new();
         let mut me = Self { map };
-        me.add_piecetype("pawn".into(), (is_pawn_move_legal));
-        me.add_piecetype("knight".into(), (is_knight_move_legal));
-        me.add_piecetype("bishop".into(), (is_bishop_move_legal));
-        me.add_piecetype("rook".into(), (is_rook_move_legal));
-        me.add_piecetype("queen".into(), (is_queen_move_legal));
-        me.add_piecetype("king".into(), (is_king_move_legal));
+        me.add_piecetype("pawn".into(), is_pawn_move_legal);
+        me.add_piecetype("knight".into(), is_knight_move_legal);
+        me.add_piecetype("bishop".into(),is_bishop_move_legal);
+        me.add_piecetype("rook".into(), is_rook_move_legal);
+        me.add_piecetype("queen".into(), is_queen_move_legal);
+        me.add_piecetype("king".into(), is_king_move_legal);
 
         me
     }
     fn add_piecetype(&mut self, name: String, pt: fn(&mut Board, usize, &BigInt, &BigInt) -> bool) {
         self.map.insert(name, pt);
     }
+    #[cfg(test)]
     fn build_piece(
         &self,
         piece: &String,
@@ -87,14 +90,12 @@ fn is_rook_move_legal(board: &mut Board, i: usize, to_rank: &BigInt, to_file: &B
     board.get_collision(&board.pieces[i].get_rank().clone(), &board.pieces[i].get_file().clone(), to_rank, to_file)
 }
 fn is_bishop_move_legal(board: &mut Board, i: usize, to_rank: &BigInt, to_file: &BigInt) -> bool {
-    let p = board.pieces.get(i).unwrap();
-    if (p.get_rank() - to_rank).abs() != (p.get_file() - to_file).abs() {
+    if (board.pieces[i].get_rank() - to_rank).abs() != (board.pieces[i].get_file() - to_file).abs() {
         return false;
     }
-    board.get_collision(&p.get_rank().clone(), &p.get_file().clone(), to_rank, to_file)
+    board.get_collision(&board.pieces[i].get_rank().clone(), &board.pieces[i].get_file().clone(), to_rank, to_file)
 }
 fn is_queen_move_legal(board: &mut Board, i: usize, to_rank: &BigInt, to_file: &BigInt) -> bool {
-    let p = board.pieces.get(i).unwrap();
     is_bishop_move_legal(board, i, to_rank, to_file)
         || is_rook_move_legal(board, i, to_rank, to_file)
 }
@@ -107,7 +108,7 @@ fn is_king_move_legal(board: &mut Board, i: usize, to_rank: &BigInt, to_file: &B
 fn test_pawns() {
     let mut b = Board::new();
     let pm = StandardChess::new();
-    b.place_piece(pm.build_piece(&"pawn".into(), Color::White, 1.into(), 1.into()).unwrap());
+    b.place_piece(pm.build_piece(&"pawn".into(), Color::Black, 1.into(), 1.into()).unwrap());
 
     assert!(Board::is_move_legal(&mut b,&pm, &1.into(), &1.into(), &2.into(), &1.into()));
     assert!(Board::is_move_legal(&mut b,&pm, &1.into(), &1.into(), &3.into(), &1.into()));
@@ -123,7 +124,7 @@ fn test_knights() {
 
     assert!(Board::is_move_legal(&mut b, &pm, &0.into(), &1.into(), &2.into(), &2.into()));
     assert!(Board::is_move_legal(&mut b, &pm, &0.into(), &6.into(), &2.into(), &7.into()));
-    assert!(Board::is_move_legal(&mut b, &pm, &0.into(), &1.into(), &4.into(), &1.into()));
+    assert!(Board::is_move_legal(&mut b, &pm, &0.into(), &1.into(), &(-1).into(), &(-1).into()));
 }
 
 #[test]

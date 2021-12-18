@@ -1,7 +1,4 @@
-use std::{collections::HashMap, fmt};
 use num_bigint::BigInt;
-
-use crate::board::Board;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum Color {
@@ -15,15 +12,6 @@ impl ToString for Color {
             Color::Black => "black",
             Color::White => "white",
         }.into()
-    }
-}
-
-impl Color {
-    pub fn flip(&self) -> Self {
-        match self {
-            Color::Black => Color::White,
-            Color::White => Color::Black,
-        }
     }
 }
 
@@ -51,6 +39,7 @@ impl Piece {
     pub fn get_type(&self) -> &String {
         &self.piece
     }
+    #[cfg(not(features="server"))]
     pub fn get_color(&self) -> Color {
         self.color
     }
@@ -63,14 +52,15 @@ impl Piece {
     pub fn is_captured(&self) -> bool {
         self.captured
     }
+    #[cfg(not(features="server"))]
     pub fn has_moved(&self) -> bool {
         self.has_moved
     }
-
+    #[cfg(not(features="server"))]
     pub(crate) fn capture(&mut self) {
         self.captured = true;
     }
-
+    #[cfg(not(features="server"))]
     pub(crate) fn goto(&mut self, rank: &BigInt, file: &BigInt) {
         self.rank = rank.clone();
         self.file = file.clone();

@@ -1,8 +1,6 @@
-use std::{collections::HashSet, fmt, cell::{Cell, RefCell}};
+use std::{collections::HashSet, cell::{RefCell}};
 
-use crate::piece::{Color, Piece};
 use num_bigint::BigInt;
-use num_traits::Signed;
 
 pub struct PawnRank {
     /// PawnRank tracks the movement of the infinite number of pieces from a rank
