@@ -103,7 +103,7 @@ impl WasmBoard {
 }
 
 pub struct Board {
-    //pub(crate) turn: BigInt,
+    pub(crate) turn: BigInt,
     pub white_can_castle: bool,
     pub black_can_castle: bool,
     pub(crate) pieces: Vec<Piece>,
@@ -114,7 +114,7 @@ pub struct Board {
 impl Board {
     pub fn new() -> Self {
         Self {
-            //turn: 0.into(),
+            turn: 0.into(),
             white_can_castle: true,
             black_can_castle: true,
             pieces: Vec::new(),

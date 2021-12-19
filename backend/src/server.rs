@@ -1,6 +1,7 @@
 use std::str::FromStr;
 use std::sync::Arc;
 use std::sync::Mutex;
+use std::time::Duration;
 mod error;
 #[cfg(feature = "server")]
 use actix_web::{get, HttpResponse};
@@ -24,6 +25,9 @@ use crate::board_serializer::board_serialize;
 use crate::error::*;
 #[cfg(feature = "server")]
 use actix_files as fs;
+
+use async_std::task;
+
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -131,6 +135,7 @@ async fn main() -> std::io::Result<()> {
             .service(get)
             .service(get_legal)
             .service(get_move)
+            .service(get_version)
             .app_data(board.clone())
             .data(Arc::new(StandardChess::new()))
             .service(fs::Files::new("/", "./static").index_file("index.html"))
@@ -147,6 +152,21 @@ pub async fn get(board: web::Data<Arc<Mutex<Board>>>) -> Result<HttpResponse, Er
     Ok(HttpResponse::Ok()
         .content_type("application/json")
         .body(board_serialize(&b)))
+}
+
+#[get("/board/{version}")]
+pub async fn get_version(board: web::Data<Arc<Mutex<Board>>>, web::Path((version)): web::Path<(String)>) -> Result<HttpResponse, Error> {
+    let version2 = version.parse::<BigInt>().map_err(|_| Error::new())?;
+    loop {
+        let b = board.lock().unwrap();
+        if b.turn >= version2 {
+            return Ok(HttpResponse::Ok()
+            .content_type("application/json")
+            .body(board_serialize(&b)));
+        }
+        drop(b);
+        task::sleep(Duration::from_millis(10)).await;
+    }
 }
 
 #[get("/legal/{px}/{py}/{wx}/{wy}/{zoom}")]
@@ -197,6 +217,7 @@ pub async fn get_move(
 
     if Board::is_move_legal(&mut b, &rules, &bigpx, &bigpy, &bigdx, &bigdy) {
         b.do_move(&bigpx, &bigpy, &bigdx, &bigdy);
+        b.turn += 1;
     }
 
     Ok(HttpResponse::Ok()

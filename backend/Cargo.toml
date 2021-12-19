@@ -15,6 +15,7 @@ path = "./src/server.rs"
 name = "server"
 
 [dependencies]
+async-std = "1.10.0"
 num-bigint = "0.4.0"
 actix-web = { version = "3", optional = true }
 rusqlite = { version = "0.24.2", optional = true }

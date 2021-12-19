@@ -12,6 +12,7 @@ var scrollFromX = null;
 var scrollFromY = null;
 var scrollFromXS = null;
 var scrollFromYS = null;
+var gTurn = 0;
 
 var pieces = [];
 var movable = [];
@@ -174,7 +175,7 @@ function ismovable(e) {
 }
 
 function getBoard() {
-    fetch("/board")
+    fetch("/board/"+gTurn)
     .then(response => {
       if (!response.ok) {
         throw new Error(`Request failed with status ${response.status}`)
@@ -195,9 +196,14 @@ function getBoard() {
       for (var i = 0; i < data.white_pawns.length; i++) {
         madePawnsWhite.add(data.white_pawns[i]);
     }
+      gTurn = data["turn"] + 1;
       render();
+      getBoard();
     })
-    .catch(error => console.log(error))
+    .catch(error => {console.log(error);
+        gTurn = 0;
+        getBoard();
+    })
 }
 
 function getMoves() {
