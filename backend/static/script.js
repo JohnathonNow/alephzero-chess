@@ -180,14 +180,11 @@ function getBoard() {
       if (!response.ok) {
         throw new Error(`Request failed with status ${response.status}`)
       }
-      return response.json()
-    })
-    .then(data => {
+      return response.text();}).then(text => {
+      var data = JSON.parse(text);
       console.log(data);
       pieces = data.pieces;
-      for (var i = 0; i < pieces.length; i++) {
-          board.place_piece(pieces[i].piece, pieces[i].color == "white", pieces[i].y, pieces[i].x);
-      }
+      board.build(text);
       madePawnsBlack.clear();
       madePawnsWhite.clear();
       for (var i = 0; i < data.black_pawns.length; i++) {
@@ -196,13 +193,14 @@ function getBoard() {
       for (var i = 0; i < data.white_pawns.length; i++) {
         madePawnsWhite.add(data.white_pawns[i]);
     }
-      gTurn = data["turn"] + 1;
+      gTurn = parseInt(data["turn"]) + 1;
       render();
+      console.log(board.deconstruct());
       getBoard();
     })
     .catch(error => {console.log(error);
         gTurn = 0;
-        getBoard();
+        setTimeout(getBoard, 1000);
     })
 }
 

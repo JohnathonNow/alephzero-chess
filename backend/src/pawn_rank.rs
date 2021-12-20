@@ -19,6 +19,9 @@ impl PawnRank {
     pub fn set_moved(&self, file: &BigInt) {
         self.moved.borrow_mut().insert(file.clone());
     }
+    pub fn clear(&self) {
+        self.moved.borrow_mut().clear();
+    }
 }
 
 impl ToString for PawnRank {

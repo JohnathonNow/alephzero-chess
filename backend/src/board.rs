@@ -1,3 +1,4 @@
+use crate::board_serializer::{board_deserialize, board_serialize};
 use crate::pawn_rank::PawnRank;
 use crate::piece::{Color, Piece};
 use crate::piece_rules::{PieceRules, StandardChess};
@@ -22,6 +23,12 @@ impl WasmBoard {
             board: Board::new(),
             rules: StandardChess::new(),
         }
+    }
+    pub fn build(&mut self, s: String) {
+        board_deserialize(&mut self.board, &s);
+    }
+    pub fn deconstruct(&self) -> String {
+        board_serialize(&self.board)
     }
     pub fn place_piece(
         &mut self,
@@ -104,8 +111,6 @@ impl WasmBoard {
 
 pub struct Board {
     pub(crate) turn: BigInt,
-    pub white_can_castle: bool,
-    pub black_can_castle: bool,
     pub(crate) pieces: Vec<Piece>,
     pub(crate) white_pawns: PawnRank,
     pub(crate) black_pawns: PawnRank,
@@ -115,8 +120,6 @@ impl Board {
     pub fn new() -> Self {
         Self {
             turn: 0.into(),
-            white_can_castle: true,
-            black_can_castle: true,
             pieces: Vec::new(),
             white_pawns: PawnRank::new(),
             black_pawns: PawnRank::new(),
