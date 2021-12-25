@@ -13,10 +13,38 @@ var scrollFromY = null;
 var scrollFromXS = null;
 var scrollFromYS = null;
 var gTurn = 0;
+var toPromote = null;
 
 var pieces = [];
 var movable = [];
 var board = null;
+
+
+function promote(n) {
+console.log("SWAG PARTY");
+document.getElementById("overlay").style.display = "none";
+var pt = "";
+switch (n) {
+case 0:
+pt = "knight";
+break;
+case 1:
+pt = "bishop";
+break;
+case 2:
+pt = "rook";
+break;
+case 3:
+pt = "queen";
+break;
+}
+board.promote(""+toPromote.y, ""+toPromote.x, pt);
+toPromote.type = toPromote.type.split("_")[0] + "_" + pt;
+render();
+toPromote = null;
+}
+
+window.promote = promote;
 
 function displayed(x, y) {
     x -= xCord;
@@ -146,6 +174,10 @@ function moveEnd(e) {
             if (grabbedPiece) {
                 grabbedPiece.alive = false;
             }
+            if ((toMove.type == "white_pawn" && y == 0) || (toMove.type == "black_pawn" && y == 7)) {
+                document.getElementById("overlay").style.display = "block";
+                toPromote = toMove;
+            }
         }
         toMove = null;
         movable = [];
@@ -241,6 +273,7 @@ function make_move(x, y) {
     .catch(error => console.log(error))
 }
 
+
 init()
   .then(() => {
     board = new WasmBoard();
@@ -248,3 +281,4 @@ init()
     console.log(JSON.parse(board.get_legal_moves("1", "4", "0", "0", "8")));
 
   });
+

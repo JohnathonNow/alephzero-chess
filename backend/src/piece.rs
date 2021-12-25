@@ -40,6 +40,9 @@ impl Piece {
     pub fn get_type(&self) -> &String {
         &self.piece
     }
+    pub fn set_type(&mut self, piece: String) {
+        self.piece = piece;
+    }
     #[cfg(not(features = "server"))]
     pub fn get_color(&self) -> Color {
         self.color

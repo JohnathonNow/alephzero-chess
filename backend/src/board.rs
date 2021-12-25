@@ -48,6 +48,13 @@ impl WasmBoard {
         self.board
             .get_piece_at(&rank.parse::<BigInt>().ok()?, &file.parse::<BigInt>().ok()?)
     }
+    pub fn promote(&mut self, rank: String, file: String, new_type: String) -> Option<usize> {
+        self.board.promote(
+            &rank.parse::<BigInt>().ok()?,
+            &file.parse::<BigInt>().ok()?,
+            new_type,
+        )
+    }
     pub fn do_move(
         &mut self,
         rank: String,
@@ -124,6 +131,12 @@ impl Board {
             white_pawns: PawnRank::new(),
             black_pawns: PawnRank::new(),
         }
+    }
+    pub fn promote(&mut self, rank: &BigInt  , file: &BigInt , new_type: String) -> Option<usize> {
+        self.get_piece_at(rank, file).and_then(|i| {
+            self.pieces[i].set_type(new_type);
+            Some(i)
+        })
     }
     pub(crate) fn place_piece(&mut self, piece: Piece) -> Option<usize> {
         let x = piece;

@@ -24,6 +24,14 @@
     <body>
         <h1>ℵ<sub>0</sub>Chess</h1>
         <div id="view">
+            <div id="overlay">
+                <ul style="text-align:center">
+                    <li class="white_knight" onclick="console.log(0);promote(0);"><wbr></li>
+                    <li class="white_bishop" onclick="promote(1);"><wbr></li>
+                    <li class="white_rook" onclick="promote(2);"><wbr></li>
+                    <li class="white_queen" onclick="promote(3);"><wbr></li>
+                </ul>
+            </div>
             <ul id='zoomable'></ul>
         </div>
         <div class="together">
