@@ -135,6 +135,7 @@ async fn main() -> std::io::Result<()> {
             .service(get)
             .service(get_legal)
             .service(get_move)
+            .service(get_promote)
             .service(get_version)
             .app_data(board.clone())
             .data(Arc::new(StandardChess::new()))
@@ -219,6 +220,25 @@ pub async fn get_move(
         b.do_move(&bigpx, &bigpy, &bigdx, &bigdy);
         b.turn += 1;
     }
+
+    Ok(HttpResponse::Ok()
+        .content_type("application/json")
+        .body("swag"))
+}
+
+
+#[get("/promote/{px}/{py}/{p}")]
+pub async fn get_promote(
+    board: web::Data<Arc<Mutex<Board>>>,
+    rules: web::Data<Arc<StandardChess>>,
+    web::Path((px, py, p)): web::Path<(String, String, String)>,
+) -> Result<HttpResponse, Error> {
+    let bigpx = BigInt::from_str(&px).map_err(|_| Error::new())?;
+    let bigpy = BigInt::from_str(&py).map_err(|_| Error::new())?;
+
+    let mut b = board.lock().unwrap();
+
+    b.promote(&bigpx, &bigpy, p);
 
     Ok(HttpResponse::Ok()
         .content_type("application/json")

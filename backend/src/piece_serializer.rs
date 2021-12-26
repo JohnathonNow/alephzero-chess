@@ -25,6 +25,9 @@ pub fn piece_deserialize(s: &String) -> Option<Piece> {
     if !v["alive"].as_bool()? {
         p.capture();
     }
+    if v["has_moved"].as_bool()? {
+        p.set_has_moved();
+    }
 
     //TODO do this better
     Some(p)

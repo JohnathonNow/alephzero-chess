@@ -61,6 +61,10 @@ impl Piece {
         self.has_moved
     }
     #[cfg(not(features = "server"))]
+    pub fn set_has_moved(&mut self) {
+        self.has_moved = true;
+    }
+    #[cfg(not(features = "server"))]
     pub(crate) fn capture(&mut self) {
         self.captured = true;
     }
