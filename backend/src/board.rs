@@ -1,4 +1,5 @@
 use crate::board_serializer::{board_deserialize, board_serialize};
+use crate::moves::Move;
 use crate::pawn_rank::PawnRank;
 use crate::piece::{Color, Piece};
 use crate::piece_rules::{PieceRules, StandardChess};
@@ -146,6 +147,7 @@ pub struct Board {
     pub(crate) pieces: Vec<Piece>,
     pub(crate) white_pawns: PawnRank,
     pub(crate) black_pawns: PawnRank,
+    pub(crate) moves: Vec<Move>,
 }
 
 impl Board {
@@ -155,6 +157,7 @@ impl Board {
             pieces: Vec::new(),
             white_pawns: PawnRank::new(),
             black_pawns: PawnRank::new(),
+            moves: Vec::new(),
         }
     }
     pub fn promote(&mut self, rank: &BigInt  , file: &BigInt , new_type: String) -> Option<usize> {
@@ -168,6 +171,9 @@ impl Board {
         self.pieces.push(x);
         Some(self.pieces.len() - 1)
     }
+    pub(crate) fn last_move(&self) -> Option<usize> {
+        self.moves.last().map(|m| m.get_piece())
+    }
     pub(crate) fn do_move(
         &mut self,
         rank: &BigInt,
@@ -178,11 +184,19 @@ impl Board {
         let from = self.get_piece_at(rank, file)?;
         if let Some(to) = self.get_piece_at(to_rank, to_file) {
             self.pieces.get_mut(to).unwrap().capture();
+        } else if self.pieces[from].get_type() == "pawn" {
+            if let Some(to) = self.get_piece_at(rank, to_file) {
+                if from != to {
+                    self.pieces.get_mut(to).unwrap().capture();
+                }
+            }
         }
         let p = self.pieces.get_mut(from).unwrap();
         p.goto(to_rank, to_file);
         println!("{}", piece_serialize(p));
-        None
+        self.moves.push(Move::new(from));
+        println!("{:?}", self.last_move());
+        Some(0)
     }
     pub(crate) fn get_piece_at(&mut self, rank: &BigInt, file: &BigInt) -> Option<usize> {
         if *rank == 1.into() && !self.black_pawns.has_moved(file) {

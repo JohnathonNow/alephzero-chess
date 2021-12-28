@@ -11,6 +11,7 @@ use num_bigint::BigInt;
 mod board;
 mod board_serializer;
 mod pawn_rank;
+mod moves;
 mod piece;
 mod piece_rules;
 mod piece_serializer;

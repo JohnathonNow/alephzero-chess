@@ -5,3 +5,4 @@ mod piece;
 mod piece_rules;
 //mod error;
 mod piece_serializer;
+mod moves;

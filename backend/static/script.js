@@ -94,7 +94,7 @@ function render() {
             var d = piece.x - xCord + (piece.y - yCord) * size;
             var n = document.getElementById(cell_prefix + d);
             n.classList.add(piece.type);
-            if (i == toMove) {
+            if (i == toMove) { //fix this
                 n.classList.add("selected");
             }
         }

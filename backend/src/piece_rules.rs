@@ -76,6 +76,12 @@ fn is_pawn_move_legal(board: &mut Board, i: usize, to_rank: &BigInt, to_file: &B
         if let Some(_) = board.get_piece_at(to_rank, to_file) {
             return true;
         }
+        let rank = board.pieces[i].get_rank().clone();//bad
+        //en passant!
+        if let Some(p) = board.get_piece_at(&rank, to_file) {
+            return board.pieces[p].get_type() == "pawn" && board.pieces[p].get_color() != board.pieces[i].get_color()
+            && board.last_move().map_or(false, |x| x == p);
+        }
     }
     false
 }
