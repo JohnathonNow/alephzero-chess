@@ -95,11 +95,13 @@ function render() {
             var d = piece.x - xCord + (piece.y - yCord) * size;
             var n = document.getElementById(cell_prefix + d);
             n.classList.add(piece.type);
-            if (piece.x == toMoveInfo.x && piece.y == toMoveInfo.y) { //fix this
+            if (piece.x == toMoveInfo.x && piece.y == toMoveInfo.y) {
                 n.classList.add("selected");
             }
         }
     }
+    movable.length = 0;
+    getMoves();
     for (var i = 0; i < movable.length; i++) {
         var space = movable[i];
         var d = space[1] - xCord + (space[0] - yCord) * size;
