@@ -76,6 +76,7 @@ function render() {
     xCord = parseInt(document.getElementById("xport").value);
     yCord = parseInt(document.getElementById("yport").value);
     var newSize = parseInt(document.getElementById("zoom").value);
+    var toMoveInfo = getPieceInfo(toMove);
     if (size != newSize) {
         size = newSize;
         addSquares();
@@ -94,7 +95,7 @@ function render() {
             var d = piece.x - xCord + (piece.y - yCord) * size;
             var n = document.getElementById(cell_prefix + d);
             n.classList.add(piece.type);
-            if (i == toMove) { //fix this
+            if (piece.x == toMoveInfo.x && piece.y == toMoveInfo.y) { //fix this
                 n.classList.add("selected");
             }
         }
@@ -144,9 +145,6 @@ function moveEnd(e) {
             make_move(x, y);
             toMoveInfo.x = x;
             toMoveInfo.y = y;
-            if (grabbedPiece) {
-                grabbedPieceInfo.alive = false;
-            }
             if ((toMoveInfo.type == "white_pawn" && y == 0) || (toMoveInfo.type == "black_pawn" && y == 7)) {
                 document.getElementById("overlay").style.display = "block";
                 toPromote = toMove;
