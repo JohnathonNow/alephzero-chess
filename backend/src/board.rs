@@ -4,6 +4,7 @@ use crate::piece::{Color, Piece};
 use crate::piece_rules::{PieceRules, StandardChess};
 use crate::piece_serializer::piece_serialize;
 use num_bigint::BigInt;
+use num_traits::Signed;
 use wasm_bindgen::prelude::*;
 pub const STANDARD_BOARD_SIZE: i32 = 8;
 
@@ -48,6 +49,20 @@ impl WasmBoard {
         self.board
             .get_piece_at(&rank.parse::<BigInt>().ok()?, &file.parse::<BigInt>().ok()?)
     }
+    pub fn add_pawns(&mut self, file: String, zoom: String) -> Option<usize> {
+        let f = file.parse::<BigInt>().ok()?;
+        let mut z = zoom.parse::<BigInt>().ok()?;
+        let zero = 0.into();
+        while z >= zero {
+            z -= &1.into();
+            self.board.get_piece_at(&1.into(), &(&f + &z)); //not great, improve later
+            self.board.get_piece_at(&6.into(), &(&f + &z));
+        }
+        Some(0)
+    }
+    pub fn get_piece_info(&mut self, id: usize) -> Option<String> {
+        Some(piece_serialize(self.board.pieces.get(id)?))
+    }
     pub fn promote(&mut self, rank: String, file: String, new_type: String) -> Option<usize> {
         self.board.promote(
             &rank.parse::<BigInt>().ok()?,
@@ -85,6 +100,16 @@ impl WasmBoard {
             &to_file.parse::<BigInt>().ok()?,
         ))
     }
+    pub fn get_pieces(&mut self) -> Option<String> {
+        let mut s = Vec::new();
+        for piece in &self.board.pieces {
+            if !piece.is_captured() {
+                s.push(piece_serialize(piece));
+            }
+        }
+        Some(format!("[{}]", s.join(",")))
+    }
+
     pub fn get_legal_moves(
         &mut self,
         srank: String,

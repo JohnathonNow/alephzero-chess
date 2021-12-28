@@ -1,12 +1,10 @@
-import init, {WasmBoard} from "./pkg/backend.js";
+import init, { WasmBoard } from "./pkg/backend.js";
 
 
 var xCord = 0;
 var yCord = 0;
 var cell_prefix = "square_";
 var toMove = null;
-var madePawnsBlack = new Set();
-var madePawnsWhite = new Set();
 var size = 12;
 var scrollFromX = null;
 var scrollFromY = null;
@@ -15,33 +13,28 @@ var scrollFromYS = null;
 var gTurn = 0;
 var toPromote = null;
 
-var pieces = [];
 var movable = [];
 var board = null;
 
 
 function promote(n) {
-console.log("SWAG PARTY");
-document.getElementById("overlay").style.display = "none";
-var pt = "";
-switch (n) {
-case 0:
-pt = "knight";
-break;
-case 1:
-pt = "bishop";
-break;
-case 2:
-pt = "rook";
-break;
-case 3:
-pt = "queen";
-break;
-}
-board.promote(""+toPromote.y, ""+toPromote.x, pt);
-toPromote.type = toPromote.type.split("_")[0] + "_" + pt;
-render();
-toPromote = null;
+    var pt = ["knight", "bishop", "rook", "queen"][n];
+    var toPromoteInfo = getPieceInfo(toPromote);
+    fetch("/promote/" + toPromoteInfo.y + "/" + toPromoteInfo.x + "/" + pt)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Request failed with status ${response.status}`)
+            }
+            return response.text()
+        })
+        .then(data => {
+            document.getElementById("overlay").style.display = "none";
+            board.promote("" + toPromoteInfo.y, "" + toPromoteInfo.x, pt);
+            render();
+            toPromote = null;
+        })
+        .catch(error => console.log(error))
+
 }
 
 window.promote = promote;
@@ -53,49 +46,28 @@ function displayed(x, y) {
 }
 
 function getPiece(x, y) {
-    for (var i = 0; i < pieces.length; i++) {
-        var piece = pieces[i];
-        if (piece.x == x && piece.y == y && piece.alive) {
-            return piece;
-        }
-    }
-    return null;
+    return board.get_piece_at(""+y, ""+x);
 }
-
-function addPawns() {
-    for (var i = 0; i < size; i++) {
-        var x = xCord + i;
-        if (displayed(x, 1) && !madePawnsBlack.has(x)) {
-            pieces.push(
-    {'x': x, 'y': 1, 'type': 'black_pawn', 'color': 'black', 'alive': true}
-            );
-            madePawnsBlack.add(x);
-        }
-        if (displayed(x, 6) && !madePawnsWhite.has(x)) {
-            pieces.push(
-    {'x': x, 'y': 6, 'type': 'white_pawn', 'color': 'white', 'alive': true}
-            );
-            madePawnsWhite.add(x);
-        }
-    }
+function getPieceInfo(i) {
+    return JSON.parse(board.get_piece_info(i));
 }
 
 function addSquares() {
     var palette = document.getElementById("zoomable");
-	while (palette.firstChild) {
-		palette.removeChild(palette.firstChild);
-	}
-    for (var i = 0; i < size*size; i++) {
+    while (palette.firstChild) {
+        palette.removeChild(palette.firstChild);
+    }
+    for (var i = 0; i < size * size; i++) {
         var n = document.createElement("li");
         n['data-x'] = i % size;
-        n['data-y'] = Math.floor(i/size);
+        n['data-y'] = Math.floor(i / size);
         n.id = cell_prefix + i;
         n.onmousedown = moveBegin;
         n.onmouseup = moveEnd;
         n.ontouchstart = startTouch;
         n.ontouchmove = moveTouch;
-		n.style.width = 100/size + '%';
-		n.style.height = n.style.width;
+        n.style.width = 100 / size + '%';
+        n.style.height = n.style.width;
         palette.appendChild(n);
     }
 }
@@ -108,20 +80,21 @@ function render() {
         size = newSize;
         addSquares();
     }
-    addPawns();
-    for (var i = 0; i < size*size; i++) {
+    for (var i = 0; i < size * size; i++) {
         var n = document.getElementById(cell_prefix + i);
         n.className = "";
-        var f = size % 2 == 0? Math.floor(i/size) : 0;
-        n.classList.add((f + i + xCord) % 2 == 0? "white_square" : "black_square");
+        var f = size % 2 == 0 ? Math.floor(i / size) : 0;
+        n.classList.add((f + i + xCord) % 2 == 0 ? "white_square" : "black_square");
     }
+    board.add_pawns(""+xCord, ""+size);
+    var pieces = JSON.parse(board.get_pieces());
     for (var i = 0; i < pieces.length; i++) {
         var piece = pieces[i];
         if (displayed(piece.x, piece.y) && piece.alive) {
             var d = piece.x - xCord + (piece.y - yCord) * size;
             var n = document.getElementById(cell_prefix + d);
             n.classList.add(piece.type);
-            if (piece == toMove) {
+            if (i == toMove) {
                 n.classList.add("selected");
             }
         }
@@ -134,16 +107,14 @@ function render() {
     }
 }
 
-window.onload = function() {
-    getBoard();
+window.onload = function () {
     addSquares();
     document.getElementById('xport').oninput = render;
     document.getElementById('yport').oninput = render;
     var deltas = document.getElementsByClassName("delta");
     for (var i = 0; i < deltas.length; i++) {
         deltas[i].onclick = delta;
-    } 
-    render();
+    }
 };
 
 function delta(e) {
@@ -166,15 +137,17 @@ function moveEnd(e) {
     var x = parseInt(e.target['data-x']) + xCord;
     var y = parseInt(e.target['data-y']) + yCord;
     var grabbedPiece = getPiece(x, y);
-    if (toMove && toMove != grabbedPiece) { 
-        if (ismovable(e)  && (!grabbedPiece || grabbedPiece.color != toMove.color)) {
+    var grabbedPieceInfo = getPieceInfo(grabbedPiece);
+    var toMoveInfo = getPieceInfo(toMove);
+    if (toMove && toMove != grabbedPiece) {
+        if (ismovable(e) && (!grabbedPiece || grabbedPieceInfo.color != toMoveInfo.color)) {
             make_move(x, y);
-            toMove.x = x;
-            toMove.y = y;
+            toMoveInfo.x = x;
+            toMoveInfo.y = y;
             if (grabbedPiece) {
-                grabbedPiece.alive = false;
+                grabbedPieceInfo.alive = false;
             }
-            if ((toMove.type == "white_pawn" && y == 0) || (toMove.type == "black_pawn" && y == 7)) {
+            if ((toMoveInfo.type == "white_pawn" && y == 0) || (toMoveInfo.type == "black_pawn" && y == 7)) {
                 document.getElementById("overlay").style.display = "block";
                 toPromote = toMove;
             }
@@ -207,78 +180,52 @@ function ismovable(e) {
 }
 
 function getBoard() {
-    fetch("/board/"+gTurn)
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(`Request failed with status ${response.status}`)
-      }
-      return response.text();}).then(text => {
-      var data = JSON.parse(text);
-      console.log(data);
-      pieces = data.pieces;
-      board.build(text);
-      madePawnsBlack.clear();
-      madePawnsWhite.clear();
-      for (var i = 0; i < data.black_pawns.length; i++) {
-          madePawnsBlack.add(data.black_pawns[i]);
-      }
-      for (var i = 0; i < data.white_pawns.length; i++) {
-        madePawnsWhite.add(data.white_pawns[i]);
-    }
-      gTurn = parseInt(data["turn"]) + 1;
-      render();
-      console.log(board.deconstruct());
-      getBoard();
-    })
-    .catch(error => {console.log(error);
-        gTurn = 0;
-        setTimeout(getBoard, 1000);
-    })
+    fetch("/board/" + gTurn)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Request failed with status ${response.status}`)
+            }
+            return response.text();
+        }).then(text => {
+            var data = JSON.parse(text);
+            board.build(text);
+            gTurn = parseInt(data["turn"]) + 1;
+            render();
+            getBoard();
+        })
+        .catch(error => {
+            console.log(error);
+            gTurn = 0;
+            setTimeout(getBoard, 1000);
+        })
 }
 
 function getMoves() {
-    ///legal/{px}/{py}/{wx}/{wy}/{zoom}
-    /*
-    fetch("/legal/"+toMove.y+"/"+toMove.x+"/"+yCord+"/"+xCord+"/"+size)
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(`Request failed with status ${response.status}`)
-      }
-      return response.json()
-    })
-    .then(data => {
-      console.log(data);
-      movable = data;
-      render();
-    })
-    .catch(error => console.log(error))*/
-    movable = JSON.parse(board.get_legal_moves(""+toMove.y, ""+toMove.x, ""+yCord, ""+xCord, ""+size));
+    var toMoveInfo = getPieceInfo(toMove);
+    movable = JSON.parse(board.get_legal_moves("" + toMoveInfo.y, "" + toMoveInfo.x, "" + yCord, "" + xCord, "" + size));
 }
 
 function make_move(x, y) {
-    var tomx = toMove.x;
-    var tomy = toMove.y;
-    fetch("/move/"+toMove.y+"/"+toMove.x+"/"+y+"/"+x)
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(`Request failed with status ${response.status}`)
-      }
-      return response.text()
-    })
-    .then(data => {
-      board.do_move(""+tomy, ""+tomx, ""+y, ""+x);
-      console.log(data);
-      render();
-    })
-    .catch(error => console.log(error))
+    var toMoveInfo = getPieceInfo(toMove);
+    var tomx = toMoveInfo.x;
+    var tomy = toMoveInfo.y;
+    fetch("/move/" + tomy + "/" + tomx + "/" + y + "/" + x)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Request failed with status ${response.status}`)
+            }
+            return response.text()
+        })
+        .then(data => {
+            board.do_move("" + tomy, "" + tomx, "" + y, "" + x);
+            render();
+        })
+        .catch(error => console.log(error))
 }
 
 
 init()
-  .then(() => {
-    board = new WasmBoard();
-    console.log(board);
-    console.log(JSON.parse(board.get_legal_moves("1", "4", "0", "0", "8")));
-
-  });
-
+    .then(() => {
+        board = new WasmBoard();
+        getBoard();
+    });
