@@ -7,11 +7,23 @@ Additionally, the knight's movement is slightly reinterpretted to help keep it o
 (which would be able to move infinitely farther than the knight otherwise). The pieces are placed
 where they would be normally relative to each other.
 
-## Dev Stuff  
-The project is split into two parts, the Rust **backend** and JS/HTML/CSS **frontend**.
+## On Your Turn  
+Simply click the piece you want to move, and then click where you want to move it to. Options will
+be displayed in orange. On desktop, you may click and drag a piece where you want it to go. On mobile,
+however, clicking and dragging will pan the "camera" of the game. On both desktop and mobile,
+you can also either edit the camera position text boxes, or use the + and - buttons, to move the camera.
 
-### Backend  
-Game state is stored in a SQLite database.
-Each game gets a row in the `games` table, containing information about the players, current turn, etc.
-Each piece for each game also gets a row in the `pieces` table, containing information about what
-the piece is, its coordinates, if it was captured, etc.
+## Dev Stuff  
+The project's backend is written in rust. The front end is written in standard
+vanilla JS+CSS+HTML, but utilizes wasm to avoid having to re-write the move validator
+in JS. 
+
+### Build Instructions  
+To build the front end, run `wasm-pack build --target web` and then copy the resulting `pkg` directory into the static directory.
+
+To build the game server, run `cargo build --bin server --features="server"`.
+
+### Runtime Instructions  
+The game currently takes no arguments and only listens on port 8080. Simply run the executable, perhaps by running `./target/debug/server`.
+You must run the server from the `backend` directory of the project, as it uses resources from the `static` directory. Sorry about that.
+
