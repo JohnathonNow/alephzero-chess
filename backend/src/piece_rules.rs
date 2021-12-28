@@ -292,6 +292,22 @@ fn test_bishops() {
     ));
 }
 
+#[test]
+fn test_en_passant() {
+    let mut b = Board::new();
+    let pm = StandardChess::new();
+    b.place_piece(
+        pm.build_piece(&"pawn".into(), Color::Black, 0.into(), 3.into())
+            .unwrap(),
+    );
+    b.do_move(&0.into(), &3.into(), &2.into(), &3.into());
+    b.place_piece(
+        pm.build_piece(&"pawn".into(), Color::White, 2.into(), 4.into())
+            .unwrap(),
+    );
+    assert!(is_pawn_move_legal(&mut b, 1, &1.into(), &3.into()))
+}
+
 impl PieceRules for StandardChess {
     fn can_move(&self, board: &mut Board, i: usize, to_rank: &BigInt, to_file: &BigInt) -> bool {
         let piece = board.pieces.get(i).unwrap();
