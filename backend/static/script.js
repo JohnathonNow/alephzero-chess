@@ -46,7 +46,7 @@ function displayed(x, y) {
 }
 
 function getPiece(x, y) {
-    return board.get_piece_at(""+y, ""+x);
+    return board.get_piece_at("" + y, "" + x);
 }
 function getPieceInfo(i) {
     return JSON.parse(board.get_piece_info(i));
@@ -87,7 +87,7 @@ function render() {
         var f = size % 2 == 0 ? Math.floor(i / size) : 0;
         n.classList.add((f + i + xCord) % 2 == 0 ? "white_square" : "black_square");
     }
-    board.add_pawns(""+xCord, ""+size);
+    board.add_pawns("" + xCord, "" + size);
     var pieces = JSON.parse(board.get_pieces());
     for (var i = 0; i < pieces.length; i++) {
         var piece = pieces[i];
@@ -95,18 +95,20 @@ function render() {
             var d = piece.x - xCord + (piece.y - yCord) * size;
             var n = document.getElementById(cell_prefix + d);
             n.classList.add(piece.type);
-            if (piece.x == toMoveInfo.x && piece.y == toMoveInfo.y) {
+            if (piece.x == toMoveInfo.x && piece.y == toMoveInfo.y && toMove) {
                 n.classList.add("selected");
             }
         }
     }
-    movable.length = 0;
-    getMoves();
-    for (var i = 0; i < movable.length; i++) {
-        var space = movable[i];
-        var d = space[1] - xCord + (space[0] - yCord) * size;
-        var n = document.getElementById(cell_prefix + d);
-        n.classList.add("movable");
+    if (toMove) {
+        movable.length = 0;
+        getMoves();
+        for (var i = 0; i < movable.length; i++) {
+            var space = movable[i];
+            var d = space[1] - xCord + (space[0] - yCord) * size;
+            var n = document.getElementById(cell_prefix + d);
+            n.classList.add("movable");
+        }
     }
 }
 

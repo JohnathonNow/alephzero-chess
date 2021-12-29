@@ -185,13 +185,28 @@ impl Board {
         if let Some(to) = self.get_piece_at(to_rank, to_file) {
             self.pieces.get_mut(to).unwrap().capture();
         } else if self.pieces[from].get_type() == "pawn" {
+            // en passant
             if let Some(to) = self.get_piece_at(rank, to_file) {
                 if from != to {
                     self.pieces.get_mut(to).unwrap().capture();
                 }
             }
+        } else {
+            //castle
+            if self.pieces[from].get_type() == "king" && (file - to_file).abs() >= 2.into() {
+                if to_file == &2.into() {
+                    let rook = self.get_piece_at(rank, &0.into())?;
+                    let p2 = self.pieces.get_mut(rook)?;
+                    p2.goto(rank, &3.into());
+                }
+                if to_file == &6.into() {
+                    let rook = self.get_piece_at(rank, &7.into())?;
+                    let p2 = self.pieces.get_mut(rook)?;
+                    p2.goto(rank, &5.into());
+                }
+            }
         }
-        let p = self.pieces.get_mut(from).unwrap();
+        let p = self.pieces.get_mut(from)?;
         p.goto(to_rank, to_file);
         println!("{}", piece_serialize(p));
         self.moves.push(Move::new(from));

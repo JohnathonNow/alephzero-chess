@@ -76,11 +76,12 @@ fn is_pawn_move_legal(board: &mut Board, i: usize, to_rank: &BigInt, to_file: &B
         if let Some(_) = board.get_piece_at(to_rank, to_file) {
             return true;
         }
-        let rank = board.pieces[i].get_rank().clone();//bad
-        //en passant!
+        let rank = board.pieces[i].get_rank().clone(); //bad
+                                                       //en passant!
         if let Some(p) = board.get_piece_at(&rank, to_file) {
-            return board.pieces[p].get_type() == "pawn" && board.pieces[p].get_color() != board.pieces[i].get_color()
-            && board.last_move().map_or(false, |x| x == p);
+            return board.pieces[p].get_type() == "pawn"
+                && board.pieces[p].get_color() != board.pieces[i].get_color()
+                && board.last_move().map_or(false, |x| x == p);
         }
     }
     false
@@ -125,9 +126,35 @@ fn is_queen_move_legal(board: &mut Board, i: usize, to_rank: &BigInt, to_file: &
         || is_rook_move_legal(board, i, to_rank, to_file)
 }
 fn is_king_move_legal(board: &mut Board, i: usize, to_rank: &BigInt, to_file: &BigInt) -> bool {
-    is_queen_move_legal(board, i, to_rank, to_file)
+    if is_queen_move_legal(board, i, to_rank, to_file)
         && (board.pieces[i].get_rank() - to_rank).abs() <= 1.into()
         && (board.pieces[i].get_file() - to_file).abs() <= 1.into()
+    {
+        return true;
+    }
+    // Castling
+    if board.pieces[i].has_moved() {
+        return false;
+    }
+    if to_rank != board.pieces[i].get_rank() {
+        return false;
+    }
+    if to_file == &6.into() {
+        if let Some(z) = board.get_piece_at(to_rank, &7.into()) {
+            return !board.pieces[z].has_moved()
+                && board.get_piece_at(to_rank, &6.into()).is_none()
+                && board.get_piece_at(to_rank, &5.into()).is_none();
+        }
+    }
+    if to_file == &2.into() {
+        if let Some(z) = board.get_piece_at(to_rank, &0.into()) {
+            return !board.pieces[z].has_moved()
+                && board.get_piece_at(to_rank, &1.into()).is_none()
+                && board.get_piece_at(to_rank, &2.into()).is_none()
+                && board.get_piece_at(to_rank, &3.into()).is_none();
+        }
+    }
+    false
 }
 #[test]
 fn test_pawns() {
