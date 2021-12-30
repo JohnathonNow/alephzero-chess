@@ -15,7 +15,7 @@ pub(crate) fn board_serialize(b: &Board) -> String {
         pieces.push(piece_serialize(piece));
     }
     out += &format!("{{\"turn\": \"{}\", \"pieces\": [{}], \"white_pawns\": [{}], \"black_pawns\": [{}], \"moves\": [{}]}}", b.turn, pieces.join(","), b.white_pawns.to_string(), b.black_pawns.to_string(), 
-    b.moves.iter().map(|x| format!("{}", x.get_piece()).to_string()).collect::<Vec<String>>().join(","));
+    b.moves.iter().map(|x| x.serialize()).collect::<Vec<String>>().join(","));
 
     out
 }
@@ -37,7 +37,7 @@ pub(crate) fn board_deserialize(b: &mut Board, s: &String) -> Option<i32> {
         b.black_pawns.set_moved(&p.to_string().parse::<BigInt>().ok()?);
     }
     for p in v["moves"].as_array()? {
-        b.moves.push(Move::new(p.as_u64()? as usize));
+        b.moves.push(Move::deserialize(&p.as_str()?.to_string()));
     }
     Some(0)
 }

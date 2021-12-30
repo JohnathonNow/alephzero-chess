@@ -78,12 +78,13 @@ impl WasmBoard {
         to_rank: String,
         to_file: String,
     ) -> Option<usize> {
-        self.board.do_move(
+        let m = Board::move_legal(&mut self.board, &self.rules,
             &rank.parse::<BigInt>().ok()?,
             &file.parse::<BigInt>().ok()?,
             &to_rank.parse::<BigInt>().ok()?,
             &to_file.parse::<BigInt>().ok()?,
-        )
+        )?;
+        self.board.do_move(m)
     }
     pub fn is_move_legal(
         &mut self,
@@ -176,41 +177,15 @@ impl Board {
     }
     pub(crate) fn do_move(
         &mut self,
-        rank: &BigInt,
-        file: &BigInt,
-        to_rank: &BigInt,
-        to_file: &BigInt,
+        m: Move
     ) -> Option<usize> {
-        let from = self.get_piece_at(rank, file)?;
-        if let Some(to) = self.get_piece_at(to_rank, to_file) {
-            self.pieces.get_mut(to).unwrap().capture();
-        } else if self.pieces[from].get_type() == "pawn" {
-            // en passant
-            if let Some(to) = self.get_piece_at(rank, to_file) {
-                if from != to {
-                    self.pieces.get_mut(to).unwrap().capture();
-                }
-            }
-        } else {
-            //castle
-            if self.pieces[from].get_type() == "king" && (file - to_file).abs() >= 2.into() {
-                if to_file == &2.into() {
-                    let rook = self.get_piece_at(rank, &0.into())?;
-                    let p2 = self.pieces.get_mut(rook)?;
-                    p2.goto(rank, &3.into());
-                }
-                if to_file == &6.into() {
-                    let rook = self.get_piece_at(rank, &7.into())?;
-                    let p2 = self.pieces.get_mut(rook)?;
-                    p2.goto(rank, &5.into());
-                }
-            }
+        for motion in m.get_motions() {
+            self.pieces[motion.get_piece()].goto(motion.get_rank(), motion.get_file());
         }
-        let p = self.pieces.get_mut(from)?;
-        p.goto(to_rank, to_file);
-        println!("{}", piece_serialize(p));
-        self.moves.push(Move::new(from));
-        println!("{:?}", self.last_move());
+        for capture in m.get_captures() {
+            self.pieces[capture.get_piece()].capture();
+        }
+        self.moves.push(m);
         Some(0)
     }
     pub(crate) fn get_piece_at(&mut self, rank: &BigInt, file: &BigInt) -> Option<usize> {
@@ -272,6 +247,29 @@ impl Board {
         }
         true
     }
+    pub(crate) fn move_legal(
+        s: &mut Board,
+        rules: &StandardChess,
+        from_rank: &BigInt,
+        from_file: &BigInt,
+        to_rank: &BigInt,
+        to_file: &BigInt,
+    ) -> Option<Move> {
+        if from_rank == to_rank && from_file == to_file {
+            return None;
+        }
+        if let Some(p) = s.get_piece_at(from_rank, from_file) {
+            let good_so_far = rules.can_move(s, p, to_rank, to_file);
+            if let Some(other) = s.get_piece_at(to_rank, to_file) {
+                if s.pieces[p].get_color() == s.pieces[other].get_color() {
+                    return None;
+                }
+            }
+            good_so_far
+        } else {
+            None //no piece there so not legal
+        }
+    }
     pub(crate) fn is_move_legal(
         s: &mut Board,
         rules: &StandardChess,
@@ -280,19 +278,6 @@ impl Board {
         to_rank: &BigInt,
         to_file: &BigInt,
     ) -> bool {
-        if from_rank == to_rank && from_file == to_file {
-            return false;
-        }
-        if let Some(p) = s.get_piece_at(from_rank, from_file) {
-            let good_so_far = rules.can_move(s, p, to_rank, to_file);
-            if let Some(other) = s.get_piece_at(to_rank, to_file) {
-                if s.pieces[p].get_color() == s.pieces[other].get_color() {
-                    return false;
-                }
-            }
-            good_so_far
-        } else {
-            false //no piece there so not legal
-        }
+        Self::move_legal(s, rules, from_rank, from_file, to_rank, to_file).is_some()
     }
 }

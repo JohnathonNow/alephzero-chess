@@ -217,8 +217,8 @@ pub async fn get_move(
 
     let mut b = board.lock().unwrap();
 
-    if Board::is_move_legal(&mut b, &rules, &bigpx, &bigpy, &bigdx, &bigdy) {
-        b.do_move(&bigpx, &bigpy, &bigdx, &bigdy);
+    if let Some(m) = Board::move_legal(&mut b, &rules, &bigpx, &bigpy, &bigdx, &bigdy) {
+        b.do_move(m);
         b.turn += 1;
     }
 
