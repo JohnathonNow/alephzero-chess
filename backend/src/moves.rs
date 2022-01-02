@@ -56,14 +56,16 @@ impl Move {
         self.piece
     }
     pub fn serialize(&self) -> String {
-        let mut result = String::new();
+        let mut result1 = Vec::new();
+        let mut result2 = Vec::new();
+
         for motion in &self.motions {
-            result.push_str(&format!("[{}, {}, {}]", motion.piece, motion.to_rank, motion.to_file));
+            result1.push(format!("[{}, {}, {}]", motion.piece, motion.to_rank, motion.to_file));
         }
         for capture in &self.captures {
-            result.push_str(&format!("[{}, {}]", capture.piece, "x"));
+            result2.push(format!("[{}]", capture.piece));
         }
-        result
+        format!("{{\"motions\": [{}], \"captures\": [{}]}}", result1.join(","), result2.join(","))
     }
     pub fn deserialize(s: &String) -> Move {
         Move::new(0)
