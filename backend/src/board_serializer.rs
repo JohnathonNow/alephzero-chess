@@ -37,7 +37,7 @@ pub(crate) fn board_deserialize(b: &mut Board, s: &String) -> Option<i32> {
         b.black_pawns.set_moved(&p.to_string().parse::<BigInt>().ok()?);
     }
     for p in v["moves"].as_array()? {
-        b.moves.push(Move::deserialize(&p.as_str()?.to_string()));
+        b.moves.push(Move::deserialize(&p.to_string())?);
     }
     Some(0)
 }

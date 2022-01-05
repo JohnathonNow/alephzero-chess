@@ -1,4 +1,5 @@
 use num_bigint::BigInt;
+use serde_json::Value;
 
 pub struct Motion {
     piece: usize,
@@ -65,10 +66,12 @@ impl Move {
         for capture in &self.captures {
             result2.push(format!("[{}]", capture.piece));
         }
-        format!("{{\"motions\": [{}], \"captures\": [{}]}}", result1.join(","), result2.join(","))
+        format!("{{\"motions\": [{}], \"captures\": [{}], \"piece\": {}}}", result1.join(","), result2.join(","), self.piece)
     }
-    pub fn deserialize(s: &String) -> Move {
-        Move::new(0)
+    pub fn deserialize(s: &String) -> Option<Move> {
+        let v: Value = serde_json::from_str(s).ok()?;
+        let mut m = Move::new(v["piece"].as_u64()? as usize);
+        Some(m)
     }
 
     pub(crate) fn get_motions(&self) -> &Vec<Motion> {

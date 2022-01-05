@@ -363,6 +363,15 @@ fn test_en_passant() {
 impl PieceRules for StandardChess {
     fn can_move(&self, board: &mut Board, i: usize, to_rank: &BigInt, to_file: &BigInt) -> Option<Move> {
         let piece = board.pieces.get(i).unwrap();
+        if let Some(x) = board.last_move() {
+            if board.pieces[x].get_color() == piece.get_color() {
+                return None;
+            }
+        } else {
+            if piece.get_color() != Color::White {
+                return None;
+            }
+        }
         self.map.get(piece.get_type()).unwrap()(board, i, to_rank, to_file)
     }
 }
