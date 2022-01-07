@@ -50,18 +50,6 @@ async fn main() -> std::io::Result<()> {
         0.into(),
     ));
     b.place_piece(Piece::new(
-        "rook".to_string(),
-        piece::Color::Black,
-        0.into(),
-        7.into(),
-    ));
-    b.place_piece(Piece::new(
-        "rook".to_string(),
-        piece::Color::White,
-        7.into(),
-        7.into(),
-    ));
-    b.place_piece(Piece::new(
         "knight".to_string(),
         piece::Color::Black,
         0.into(),
@@ -72,18 +60,6 @@ async fn main() -> std::io::Result<()> {
         piece::Color::White,
         7.into(),
         1.into(),
-    ));
-    b.place_piece(Piece::new(
-        "knight".to_string(),
-        piece::Color::Black,
-        0.into(),
-        6.into(),
-    ));
-    b.place_piece(Piece::new(
-        "knight".to_string(),
-        piece::Color::White,
-        7.into(),
-        6.into(),
     ));
     b.place_piece(Piece::new(
         "bishop".to_string(),
@@ -98,16 +74,16 @@ async fn main() -> std::io::Result<()> {
         2.into(),
     ));
     b.place_piece(Piece::new(
-        "bishop".to_string(),
+        "queen".to_string(),
         piece::Color::Black,
         0.into(),
-        5.into(),
+        3.into(),
     ));
     b.place_piece(Piece::new(
-        "bishop".to_string(),
+        "queen".to_string(),
         piece::Color::White,
         7.into(),
-        5.into(),
+        3.into(),
     ));
     b.place_piece(Piece::new(
         "king".to_string(),
@@ -122,16 +98,40 @@ async fn main() -> std::io::Result<()> {
         4.into(),
     ));
     b.place_piece(Piece::new(
-        "queen".to_string(),
+        "bishop".to_string(),
         piece::Color::Black,
         0.into(),
-        3.into(),
+        5.into(),
     ));
     b.place_piece(Piece::new(
-        "queen".to_string(),
+        "bishop".to_string(),
         piece::Color::White,
         7.into(),
-        3.into(),
+        5.into(),
+    ));
+    b.place_piece(Piece::new(
+        "knight".to_string(),
+        piece::Color::Black,
+        0.into(),
+        6.into(),
+    ));
+    b.place_piece(Piece::new(
+        "knight".to_string(),
+        piece::Color::White,
+        7.into(),
+        6.into(),
+    ));
+    b.place_piece(Piece::new(
+        "rook".to_string(),
+        piece::Color::Black,
+        0.into(),
+        7.into(),
+    ));
+    b.place_piece(Piece::new(
+        "rook".to_string(),
+        piece::Color::White,
+        7.into(),
+        7.into(),
     ));
     let board: Shared = web::Data::new((Mutex::new(b), Condvar::new()));
     HttpServer::new(move || {
@@ -145,7 +145,7 @@ async fn main() -> std::io::Result<()> {
             .data(Arc::new(StandardChess::new()))
             .service(fs::Files::new("/", "./static").index_file("index.html"))
     })
-    .bind("127.0.0.1:8080")?
+    .bind("0.0.0.0:8080")?
     .run()
     .await?;
     Ok(())

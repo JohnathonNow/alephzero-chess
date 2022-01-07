@@ -16,6 +16,22 @@ var toPromote = null;
 var movable = [];
 var board = null;
 
+var cycle = [-1, -1];
+
+function centerOnPiece(piece) {
+    document.getElementById("xport").value = piece.x - Math.floor(size/2);
+    document.getElementById("yport").value = piece.y - Math.floor(size/2);
+}
+
+function cycleColor(color) {
+    var pieces = JSON.parse(board.get_pieces());
+    var i = color == "white"? 0 : 1;
+    do {
+        cycle[i] = (cycle[i] + 1) % pieces.length;
+    } while (pieces[cycle[i]].color != color || !pieces[cycle[i]].alive || (pieces[cycle[i]].piece == "pawn" && !pieces[cycle[i]].has_moved));
+    centerOnPiece(pieces[cycle[i]]);
+    render();
+}
 
 function promote(n) {
     var pt = ["knight", "bishop", "rook", "queen"][n];
@@ -38,6 +54,8 @@ function promote(n) {
 }
 
 window.promote = promote;
+window.cycleColor = cycleColor;
+
 
 function displayed(x, y) {
     x -= xCord;

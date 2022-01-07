@@ -3,6 +3,7 @@ body {
     text-align: center;
     padding: 0;
     background-color: #EEEEEE;
+    touch-action: manipulation;
 }
 
 #view {
@@ -118,6 +119,29 @@ li {
 
 .btn:hover {
     background: #e7e7e7;
+}
+
+.btn2 {
+   border-radius: 20%;
+   border-color: #e7e7e7;
+   background: #ffffff;
+   color: black;
+   display:inline-block;
+   height: 24px;
+   width: auto;
+   line-height: 24px;
+   text-align: center;
+   vertical-align: middle;
+   padding: 5px;
+   margin: 6px;
+   -webkit-user-select: none;
+   -moz-user-select: none;
+   -ms-user-select: none;
+   user-select: none;
+}
+
+.btn2:hover {
+   background: #e7e7e7;
 }
 
 .together {

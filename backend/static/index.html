@@ -16,9 +16,9 @@
 -->
 <html lang="en">
     <head>
-        <meta charset="utf-8"/>
-        <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' />
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
         <link href="style.css" rel="stylesheet">
+        <meta charset="utf-8"/>
         <title>AlephZero Chess</title>
     </head>
     <body>
@@ -50,6 +50,11 @@
             <div class="btn delta" data-target="yport" data-value="-4">-</div>
             <label>Y:<input id="yport" value=-2></label>
             <div class="btn delta" data-target="yport" data-value="4">+</div>
+        </div>
+        <br/>
+        <div class="together">
+            <div class="btn2" id="whitecycle" onclick="cycleColor('white')">Next White</div>
+            <div class="btn2" id="blackcycle" onclick="cycleColor('black')">Next Black</div>
         </div>
         <script src="script.js" type="module"></script>
     </body>
