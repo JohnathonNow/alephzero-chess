@@ -35,9 +35,9 @@
             <ul id='zoomable'></ul>
         </div>
         <div class="together">
-            <div class="btn delta" data-target="zoom" data-value="-1">-</div>
+            <div class="btn delta" data-target="zoom" data-value="-1">in</div>
             <label>Zoom:<input id="zoom" value=12></label>
-            <div class="btn delta" data-target="zoom" data-value="1">+</div>
+            <div class="btn delta" data-target="zoom" data-value="1">out</div>
         </div>
         <br/>
         <div class="together">
@@ -55,6 +55,10 @@
         <div class="together">
             <div class="btn2" id="whitecycle" onclick="cycleColor('white')">Next White</div>
             <div class="btn2" id="blackcycle" onclick="cycleColor('black')">Next Black</div>
+        </div>
+        <br/>
+        <div class="together">
+            <div class="btn2" id="flippy" onclick="flip()">Flip Board</div>
         </div>
         <script src="script.js" type="module"></script>
     </body>

@@ -13,12 +13,17 @@ var scrollFromYS = null;
 var gTurn = 0;
 var toPromote = null;
 
-var flipped = true;
+var flipped = false;
 
 var movable = [];
 var board = null;
 
 var cycle = [-1, -1];
+
+function flip() {
+    flipped = !flipped;
+    render();
+}
 
 function centerOnPiece(piece) {
     document.getElementById("xport").value = piece.x - Math.floor(size/2);
@@ -57,6 +62,7 @@ function promote(n) {
 
 window.promote = promote;
 window.cycleColor = cycleColor;
+window.flip = flip;
 
 
 function displayed(x, y) {
@@ -107,17 +113,17 @@ function addSquares() {
 }
 
 function render() {
+    var newSize = parseInt(document.getElementById("zoom").value);
+    if (size != newSize) {
+        size = newSize;
+        addSquares();
+    }
     xCord = parseInt(document.getElementById("xport").value);
     yCord = parseInt(document.getElementById("yport").value);
     if (flipped) {
         yCord = -yCord - size + 1;
     }
-    var newSize = parseInt(document.getElementById("zoom").value);
     var toMoveInfo = getPieceInfo(toMove);
-    if (size != newSize) {
-        size = newSize;
-        addSquares();
-    }
     for (var i = 0; i < size * size; i++) {
         var n = document.getElementById(cell_prefix + i);
         n.className = "";
