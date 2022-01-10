@@ -13,6 +13,8 @@ var scrollFromYS = null;
 var gTurn = 0;
 var toPromote = null;
 
+var flipped = true;
+
 var movable = [];
 var board = null;
 
@@ -59,10 +61,21 @@ window.cycleColor = cycleColor;
 
 function displayed(x, y) {
     x -= xCord;
+    if (flipped) {
+        y = -y;
+    }
     y -= yCord;
     return x >= 0 && x < size && y >= 0 && y < size;
 }
-
+function getSpace(x, y) {
+    x -= xCord;
+    if (flipped) {
+        y = -y;
+    }
+    y -= yCord;
+    var d = x + (y) * size;
+    return d;
+}
 function getPiece(x, y) {
     return board.get_piece_at("" + y, "" + x);
 }
@@ -79,6 +92,9 @@ function addSquares() {
         var n = document.createElement("li");
         n['data-x'] = i % size;
         n['data-y'] = Math.floor(i / size);
+        if (flipped) {
+            n['data-y'] = Math.floor(i / size);
+        }
         n.id = cell_prefix + i;
         n.onmousedown = moveBegin;
         n.onmouseup = moveEnd;
@@ -93,6 +109,9 @@ function addSquares() {
 function render() {
     xCord = parseInt(document.getElementById("xport").value);
     yCord = parseInt(document.getElementById("yport").value);
+    if (flipped) {
+        yCord = -yCord - size + 1;
+    }
     var newSize = parseInt(document.getElementById("zoom").value);
     var toMoveInfo = getPieceInfo(toMove);
     if (size != newSize) {
@@ -110,7 +129,7 @@ function render() {
     for (var i = 0; i < pieces.length; i++) {
         var piece = pieces[i];
         if (displayed(piece.x, piece.y) && piece.alive) {
-            var d = piece.x - xCord + (piece.y - yCord) * size;
+            var d = getSpace(piece.x, piece.y);
             var n = document.getElementById(cell_prefix + d);
             n.classList.add(piece.type);
             if (piece.x == toMoveInfo.x && piece.y == toMoveInfo.y && toMove) {
@@ -118,12 +137,13 @@ function render() {
             }
         }
     }
-    if (toMove) {
+    if (toMove != null) {
         movable.length = 0;
         getMoves();
+        console.log(movable);
         for (var i = 0; i < movable.length; i++) {
             var space = movable[i];
-            var d = space[1] - xCord + (space[0] - yCord) * size;
+            var d = getSpace(space[1], space[0]);
             var n = document.getElementById(cell_prefix + d);
             n.classList.add("movable");
         }
@@ -147,8 +167,13 @@ function delta(e) {
 }
 
 function moveBegin(e) {
-    var grabbedPiece = getPiece(parseInt(e.target['data-x']) + xCord, parseInt(e.target['data-y']) + yCord);
-    if (grabbedPiece && !toMove) {
+    var y = parseInt(e.target['data-y']);
+    if (flipped) {
+        y = -y -2*yCord;
+    }
+    var grabbedPiece = getPiece(parseInt(e.target['data-x']) + xCord, y + yCord);
+    console.log(y, y + yCord, grabbedPiece);
+    if (grabbedPiece != null && toMove == null) {
         toMove = grabbedPiece;
         movable = [];
         getMoves();
@@ -158,11 +183,15 @@ function moveBegin(e) {
 
 function moveEnd(e) {
     var x = parseInt(e.target['data-x']) + xCord;
-    var y = parseInt(e.target['data-y']) + yCord;
+    var y = parseInt(e.target['data-y']);
+    if (flipped) {
+        y = -y -2*yCord;
+    }
+    y += yCord;
     var grabbedPiece = getPiece(x, y);
     var grabbedPieceInfo = getPieceInfo(grabbedPiece);
     var toMoveInfo = getPieceInfo(toMove);
-    if (toMove && toMove != grabbedPiece) {
+    if (toMove != null && toMove != grabbedPiece) {
         if (ismovable(e) && (!grabbedPiece || grabbedPieceInfo.color != toMoveInfo.color)) {
             make_move(x, y);
             toMoveInfo.x = x;
@@ -222,7 +251,12 @@ function getBoard() {
 
 function getMoves() {
     var toMoveInfo = getPieceInfo(toMove);
-    movable = JSON.parse(board.get_legal_moves("" + toMoveInfo.y, "" + toMoveInfo.x, "" + yCord, "" + xCord, "" + size));
+    console.log(toMove, toMoveInfo);
+    var yyCord = yCord;
+    if (flipped) {
+        yyCord = -yyCord - size;
+    }
+    movable = JSON.parse(board.get_legal_moves("" + toMoveInfo.y, "" + toMoveInfo.x, "" + yyCord, "" + xCord, "" + size));
 }
 
 function make_move(x, y) {
