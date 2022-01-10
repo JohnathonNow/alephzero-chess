@@ -145,7 +145,9 @@ function render() {
             var space = movable[i];
             var d = getSpace(space[1], space[0]);
             var n = document.getElementById(cell_prefix + d);
-            n.classList.add("movable");
+            if (n) {
+                n.classList.add("movable");
+            }
         }
     }
 }
@@ -254,7 +256,7 @@ function getMoves() {
     console.log(toMove, toMoveInfo);
     var yyCord = yCord;
     if (flipped) {
-        yyCord = -yyCord - size;
+        yyCord = -yyCord - size + 1;
     }
     movable = JSON.parse(board.get_legal_moves("" + toMoveInfo.y, "" + toMoveInfo.x, "" + yyCord, "" + xCord, "" + size));
 }
