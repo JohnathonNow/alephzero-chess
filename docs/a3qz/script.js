@@ -443,8 +443,12 @@ function render() {
         if (toMove) {
             var x = parseInt(n['data-x']) + xCord;
             var y = parseInt(n['data-y']) + yCord;
-            if (movable(toMove, x, y) && !attackable(x, y)) {
-                n.classList.add('movable');
+            if (movable(toMove, x, y)) {
+                if (attackable(x, y)) {
+                    n.classList.add("attackable");
+                } else {
+                    n.classList.add('movable');
+                }
             }
         }
     }

@@ -147,3 +147,7 @@ li.movable:hover {
    background-color: #b2b2b0;
    animation: background-color 1s ease-in-out;
 }
+
+li.attackable {
+   background-color: #793c3c;
+}
