@@ -137,3 +137,13 @@ li {
 .together {
     display: inline-block;
 }
+
+li.movable {
+   background-color: #98998e;
+   animation: background-color 1s ease-in-out;
+}
+
+li.movable:hover {
+   background-color: #b2b2b0;
+   animation: background-color 1s ease-in-out;
+}

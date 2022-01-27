@@ -440,6 +440,13 @@ function render() {
         var f = size % 2 == 0? Math.floor(i/size) : 0;
         n.classList.add((f + i + xCord) % 2 == 0? "white_square" : "black_square");
         n.innerHTML = "";
+        if (toMove) {
+            var x = parseInt(n['data-x']) + xCord;
+            var y = parseInt(n['data-y']) + yCord;
+            if (movable(toMove, x, y) && !attackable(x, y)) {
+                n.classList.add('movable');
+            }
+        }
     }
     for (var i = 0; i < pieces.length; i++) {
         var piece = pieces[i];
@@ -473,7 +480,7 @@ function delta(e) {
 
 function moveBegin(e) {
     var grabbedPiece = getPiece(parseInt(e.target['data-x']) + xCord, parseInt(e.target['data-y']) + yCord);
-    if (grabbedPiece && !toMove && grabbedPiece.color == "white") {
+    if (grabbedPiece && (toMove != grabbedPiece) && grabbedPiece.color == "white") {
         toMove = grabbedPiece;
     }
     render();
