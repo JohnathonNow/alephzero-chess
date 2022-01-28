@@ -360,18 +360,54 @@ fn test_en_passant() {
     assert!(is_pawn_move_legal(&mut b, 1, &2.into(), &3.into()).is_some())
 }
 
+fn is_in_check(board: &mut Board, m: &Move) -> bool {
+    let c = board.pieces[m.get_piece()].get_color();
+    let king = if c == Color::White {board.white_king} else {board.black_king};
+    for p in 0..board.pieces.len() {
+        if board.pieces[p].get_color() != c && !board.pieces[p].is_captured() {
+            if Board::move_legal_at_all(board, &StandardChess::new(), &board.pieces[p].get_rank().clone(), &board.pieces[p].get_file().clone(), &board.pieces[king].get_rank().clone(), &board.pieces[king].get_file().clone()).is_some() {
+                return true;
+            }
+        }
+    }
+    false
+}
+
+fn would_be_in_check(
+    board: &mut Board,
+    m: Move,
+) -> Option<Move> {
+    for p in m.get_captures() {
+        board.pieces[p.get_piece()].capture();
+    }
+    let mut v = Vec::new();
+    for p in m.get_motions() {
+        let t = &board.pieces[p.get_piece()];
+        v.push((t.get_rank().clone(), t.get_file().clone(), t.has_moved()));
+    }
+    board.do_move_ref(&m);
+    let in_check = is_in_check(board, &m);
+    let mut i = 0;
+    for p in m.get_motions() {
+        let t = &mut board.pieces[p.get_piece()];
+        t.goto(&v[i].0, &v[i].1);
+        t.set_has_moved_arg(v[i].2);
+        i += 1;
+    }
+    for p in m.get_captures() {
+        board.pieces[p.get_piece()].uncapture();
+    }
+
+    if in_check {
+        None
+    } else {
+        Some(m)
+    }
+}
+
 impl PieceRules for StandardChess {
     fn can_move(&self, board: &mut Board, i: usize, to_rank: &BigInt, to_file: &BigInt) -> Option<Move> {
         let piece = board.pieces.get(i).unwrap();
-        if let Some(x) = board.last_move() {
-            if board.pieces[x].get_color() == piece.get_color() {
-                return None;
-            }
-        } else {
-            if piece.get_color() != Color::White {
-                return None;
-            }
-        }
-        self.map.get(piece.get_type()).unwrap()(board, i, to_rank, to_file)
+        self.map.get(piece.get_type()).unwrap()(board, i, to_rank, to_file).and_then(|m| would_be_in_check(board, m))
     }
 }

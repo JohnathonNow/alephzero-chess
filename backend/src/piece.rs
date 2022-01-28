@@ -65,8 +65,16 @@ impl Piece {
         self.has_moved = true;
     }
     #[cfg(not(features = "server"))]
+    pub fn set_has_moved_arg(&mut self, has_moved: bool) {
+        self.has_moved = has_moved;
+    }
+    #[cfg(not(features = "server"))]
     pub(crate) fn capture(&mut self) {
         self.captured = true;
+    }
+    #[cfg(not(features = "server"))]
+    pub(crate) fn uncapture(&mut self) {
+        self.captured = false;
     }
     #[cfg(not(features = "server"))]
     pub(crate) fn goto(&mut self, rank: &BigInt, file: &BigInt) {

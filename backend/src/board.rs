@@ -149,6 +149,8 @@ pub struct Board {
     pub(crate) white_pawns: PawnRank,
     pub(crate) black_pawns: PawnRank,
     pub(crate) moves: Vec<Move>,
+    pub(crate) white_king: usize,
+    pub(crate) black_king: usize,
 }
 
 impl Board {
@@ -159,6 +161,8 @@ impl Board {
             white_pawns: PawnRank::new(),
             black_pawns: PawnRank::new(),
             moves: Vec::new(),
+            black_king: 0,
+            white_king: 0,
         }
     }
     pub fn promote(&mut self, rank: &BigInt  , file: &BigInt , new_type: String) -> Option<usize> {
@@ -169,15 +173,22 @@ impl Board {
     }
     pub(crate) fn place_piece(&mut self, piece: Piece) -> Option<usize> {
         let x = piece;
+        if x.get_type() == "king" {
+            if x.get_color() == Color::White {
+                self.white_king = self.pieces.len();
+            } else {
+                self.black_king = self.pieces.len();
+            }
+        }
         self.pieces.push(x);
         Some(self.pieces.len() - 1)
     }
     pub(crate) fn last_move(&self) -> Option<usize> {
         self.moves.last().map(|m| m.get_piece())
     }
-    pub(crate) fn do_move(
+    pub(crate) fn do_move_ref(
         &mut self,
-        m: Move
+        m: &Move
     ) -> Option<usize> {
         for motion in m.get_motions() {
             self.pieces[motion.get_piece()].goto(motion.get_rank(), motion.get_file());
@@ -185,6 +196,13 @@ impl Board {
         for capture in m.get_captures() {
             self.pieces[capture.get_piece()].capture();
         }
+        Some(0)
+    }
+    pub(crate) fn do_move(
+        &mut self,
+        m: Move
+    ) -> Option<usize> {
+        self.do_move_ref(&m);
         self.moves.push(m);
         Some(0)
     }
@@ -247,7 +265,7 @@ impl Board {
         }
         true
     }
-    pub(crate) fn move_legal(
+    pub(crate) fn move_legal_at_all(
         s: &mut Board,
         rules: &StandardChess,
         from_rank: &BigInt,
@@ -265,6 +283,33 @@ impl Board {
                     return None;
                 }
             }
+            good_so_far
+        } else {
+            None //no piece there so not legal
+        }
+    }
+    pub(crate) fn move_legal(
+        s: &mut Board,
+        rules: &StandardChess,
+        from_rank: &BigInt,
+        from_file: &BigInt,
+        to_rank: &BigInt,
+        to_file: &BigInt,
+    ) -> Option<Move> {
+        if from_rank == to_rank && from_file == to_file {
+            return None;
+        }
+        if let Some(p) = s.get_piece_at(from_rank, from_file) {
+            if let Some(x) = s.last_move() {
+                if s.pieces[x].get_color() == s.pieces[p].get_color() {
+                    return None;
+                }
+            } else {
+                if s.pieces[p].get_color() != Color::White {
+                    return None;
+                }
+            }
+            let good_so_far = Self::move_legal_at_all(s, rules, from_rank, from_file, to_rank, to_file);
             good_so_far
         } else {
             None //no piece there so not legal
