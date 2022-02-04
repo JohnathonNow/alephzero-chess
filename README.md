@@ -1,5 +1,7 @@
 # alephzero-chess  
-An online infinite chess game.
+An online infinite chess game, implemented with rust, wasm, and vanilla JS.
+
+You can play it locally [here](https://alephzerochess.com/)!
 
 ## The Game  
 The game is played with a standard chess board, except it extends infinitely in both directions.
