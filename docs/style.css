@@ -3,6 +3,7 @@ body {
     text-align: center;
     padding: 0;
     background-color: #EEEEEE;
+    touch-action: manipulation;
 }
 
 #view {
@@ -13,6 +14,14 @@ body {
     overflow: auto;
     display: block; 
     margin:0 auto;
+}
+
+li.selected {
+   background-color: #888800;
+}
+
+li.movable {
+   background-color: #cc8800;
 }
 
 .white_square {
@@ -86,7 +95,8 @@ li {
     margin: 0;
     transition: background-color 100ms ease-in-out, background-image 100ms ease-in-out;
     background-repeat: no-repeat;
-    background-size: cover;
+    background-size: contain;
+    background-position: center;
 }
 
 .btn {
@@ -111,6 +121,44 @@ li {
     background: #e7e7e7;
 }
 
+.btn2 {
+   border-radius: 20%;
+   border-color: #e7e7e7;
+   background: #ffffff;
+   color: black;
+   display:inline-block;
+   height: 24px;
+   width: auto;
+   line-height: 24px;
+   text-align: center;
+   vertical-align: middle;
+   padding: 5px;
+   margin: 6px;
+   -webkit-user-select: none;
+   -moz-user-select: none;
+   -ms-user-select: none;
+   user-select: none;
+}
+
+.btn2:hover {
+   background: #e7e7e7;
+}
+
 .together {
     display: inline-block;
 }
+
+#overlay {
+   position: absolute; /* Sit on top of the page content */
+   display: none; /* Hidden by default */
+   width: 100%; /* Full width (cover the whole page) */
+   height: 100%; /* Full height (cover the whole page) */
+   top: 0;
+   left: 0;
+   right: 0;
+   bottom: 0;
+   background-color: rgba(0,0,0,0.5); /* Black background with opacity */
+   z-index: 2; /* Specify a stack order in case you're using a different order for other elements */
+   cursor: pointer; /* Add a pointer on hover */
+ }
+ 

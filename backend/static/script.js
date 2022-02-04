@@ -13,6 +13,8 @@ var scrollFromYS = null;
 var gTurn = 0;
 var toPromote = null;
 
+var OFFLINE = false;
+
 var flipped = false;
 
 var movable = [];
@@ -26,13 +28,13 @@ function flip() {
 }
 
 function centerOnPiece(piece) {
-    document.getElementById("xport").value = piece.x - Math.floor(size/2);
-    document.getElementById("yport").value = piece.y - Math.floor(size/2);
+    document.getElementById("xport").value = piece.x - Math.floor(size / 2);
+    document.getElementById("yport").value = piece.y - Math.floor(size / 2);
 }
 
 function cycleColor(color) {
     var pieces = JSON.parse(board.get_pieces());
-    var i = color == "white"? 0 : 1;
+    var i = color == "white" ? 0 : 1;
     do {
         cycle[i] = (cycle[i] + 1) % pieces.length;
     } while (pieces[cycle[i]].color != color || !pieces[cycle[i]].alive || (pieces[cycle[i]].piece == "pawn" && !pieces[cycle[i]].has_moved));
@@ -43,6 +45,13 @@ function cycleColor(color) {
 function promote(n) {
     var pt = ["knight", "bishop", "rook", "queen"][n];
     var toPromoteInfo = getPieceInfo(toPromote);
+    if (OFFLINE) {
+        document.getElementById("overlay").style.display = "none";
+        board.promote("" + toPromoteInfo.y, "" + toPromoteInfo.x, pt);
+        render();
+        toPromote = null;
+        return;
+    }
     fetch("/promote/" + toPromoteInfo.y + "/" + toPromoteInfo.x + "/" + pt)
         .then(response => {
             if (!response.ok) {
@@ -177,7 +186,7 @@ function delta(e) {
 function moveBegin(e) {
     var y = parseInt(e.target['data-y']);
     if (flipped) {
-        y = -y -2*yCord;
+        y = -y - 2 * yCord;
     }
     var grabbedPiece = getPiece(parseInt(e.target['data-x']) + xCord, y + yCord);
     console.log(y, y + yCord, grabbedPiece);
@@ -193,7 +202,7 @@ function moveEnd(e) {
     var x = parseInt(e.target['data-x']) + xCord;
     var y = parseInt(e.target['data-y']);
     if (flipped) {
-        y = -y -2*yCord;
+        y = -y - 2 * yCord;
     }
     y += yCord;
     var grabbedPiece = getPiece(x, y);
@@ -237,6 +246,9 @@ function ismovable(e) {
 }
 
 function getBoard() {
+    if (OFFLINE) {
+        return;
+    }
     fetch("/board/" + gTurn)
         .then(response => {
             if (!response.ok) {
@@ -271,6 +283,11 @@ function make_move(x, y) {
     var toMoveInfo = getPieceInfo(toMove);
     var tomx = toMoveInfo.x;
     var tomy = toMoveInfo.y;
+    if (OFFLINE) {
+        board.do_move("" + tomy, "" + tomx, "" + y, "" + x);
+        render();
+        return;
+    }
     fetch("/move/" + tomy + "/" + tomx + "/" + y + "/" + x)
         .then(response => {
             if (!response.ok) {
@@ -289,5 +306,110 @@ function make_move(x, y) {
 init()
     .then(() => {
         board = new WasmBoard();
-        getBoard();
+        if (OFFLINE) {
+            place_pieces()
+            return;
+        }
+        get_board();
     });
+
+
+function place_pieces() {
+    board.place_piece(
+        "rook",
+        false,
+        "0",
+        "0",
+    );
+    board.place_piece(
+        "rook",
+        true,
+        "7",
+        "0",
+    );
+    board.place_piece(
+        "knight",
+        false,
+        "0",
+        "1",
+    );
+    board.place_piece(
+        "knight",
+        true,
+        "7",
+        "1",
+    );
+    board.place_piece(
+        "bishop",
+        false,
+        "0",
+        "2",
+    );
+    board.place_piece(
+        "bishop",
+        true,
+        "7",
+        "2",
+    );
+    board.place_piece(
+        "queen",
+        false,
+        "0",
+        "3",
+    );
+    board.place_piece(
+        "queen",
+        true,
+        "7",
+        "3",
+    );
+    board.place_piece(
+        "king",
+        false,
+        "0",
+        "4",
+    );
+    board.place_piece(
+        "king",
+        true,
+        "7",
+        "4",
+    );
+    board.place_piece(
+        "bishop",
+        false,
+        "0",
+        "5",
+    );
+    board.place_piece(
+        "bishop",
+        true,
+        "7",
+        "5",
+    );
+    board.place_piece(
+        "knight",
+        false,
+        "0",
+        "6",
+    );
+    board.place_piece(
+        "knight",
+        true,
+        "7",
+        "6",
+    );
+    board.place_piece(
+        "rook",
+        false,
+        "0",
+        "7",
+    );
+    board.place_piece(
+        "rook",
+        true,
+        "7",
+        "7",
+    );
+    render();
+}

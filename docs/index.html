@@ -16,20 +16,28 @@
 -->
 <html lang="en">
     <head>
-        <meta charset="utf-8"/>
-        <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' />
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
         <link href="style.css" rel="stylesheet">
+        <meta charset="utf-8"/>
         <title>AlephZero Chess</title>
     </head>
     <body>
         <h1>ℵ<sub>0</sub>Chess</h1>
         <div id="view">
+            <div id="overlay">
+                <ul style="text-align:center">
+                    <li class="white_knight" onclick="console.log(0);promote(0);"><wbr></li>
+                    <li class="white_bishop" onclick="promote(1);"><wbr></li>
+                    <li class="white_rook" onclick="promote(2);"><wbr></li>
+                    <li class="white_queen" onclick="promote(3);"><wbr></li>
+                </ul>
+            </div>
             <ul id='zoomable'></ul>
         </div>
         <div class="together">
-            <div class="btn delta" data-target="zoom" data-value="-1">-</div>
+            <div class="btn delta" data-target="zoom" data-value="-1">in</div>
             <label>Zoom:<input id="zoom" value=12></label>
-            <div class="btn delta" data-target="zoom" data-value="1">+</div>
+            <div class="btn delta" data-target="zoom" data-value="1">out</div>
         </div>
         <br/>
         <div class="together">
@@ -43,6 +51,15 @@
             <label>Y:<input id="yport" value=-2></label>
             <div class="btn delta" data-target="yport" data-value="4">+</div>
         </div>
-        <script src="script.js"></script>
+        <br/>
+        <div class="together">
+            <div class="btn2" id="whitecycle" onclick="cycleColor('white')">Next White</div>
+            <div class="btn2" id="blackcycle" onclick="cycleColor('black')">Next Black</div>
+        </div>
+        <br/>
+        <div class="together">
+            <div class="btn2" id="flippy" onclick="flip()">Flip Board</div>
+        </div>
+        <script src="script.js" type="module"></script>
     </body>
 </html>

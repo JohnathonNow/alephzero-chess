@@ -1,122 +1,180 @@
+import init, { WasmBoard } from "/pkg/backend.js";
+
+
 var xCord = 0;
 var yCord = 0;
 var cell_prefix = "square_";
 var toMove = null;
-var madePawnsBlack = new Set();
-var madePawnsWhite = new Set();
 var size = 12;
 var scrollFromX = null;
 var scrollFromY = null;
 var scrollFromXS = null;
 var scrollFromYS = null;
+var gTurn = 0;
+var toPromote = null;
 
-var pieces = [
-    {'x': 0, 'y': 0, 'type': 'black_rook', 'color': 'black', 'alive': true},
-    {'x': 1, 'y': 0, 'type': 'black_knight', 'color': 'black', 'alive': true},
-    {'x': 2, 'y': 0, 'type': 'black_bishop', 'color': 'black', 'alive': true},
-    {'x': 3, 'y': 0, 'type': 'black_queen', 'color': 'black', 'alive': true},
-    {'x': 4, 'y': 0, 'type': 'black_king', 'color': 'black', 'alive': true},
-    {'x': 5, 'y': 0, 'type': 'black_bishop', 'color': 'black', 'alive': true},
-    {'x': 6, 'y': 0, 'type': 'black_knight', 'color': 'black', 'alive': true},
-    {'x': 7, 'y': 0, 'type': 'black_rook', 'color': 'black', 'alive': true},
-    {'x': 0, 'y': 7, 'type': 'white_rook', 'color': 'white', 'alive': true},
-    {'x': 1, 'y': 7, 'type': 'white_knight', 'color': 'white', 'alive': true},
-    {'x': 2, 'y': 7, 'type': 'white_bishop', 'color': 'white', 'alive': true},
-    {'x': 3, 'y': 7, 'type': 'white_queen', 'color': 'white', 'alive': true},
-    {'x': 4, 'y': 7, 'type': 'white_king', 'color': 'white', 'alive': true},
-    {'x': 5, 'y': 7, 'type': 'white_bishop', 'color': 'white', 'alive': true},
-    {'x': 6, 'y': 7, 'type': 'white_knight', 'color': 'white', 'alive': true},
-    {'x': 7, 'y': 7, 'type': 'white_rook', 'color': 'white', 'alive': true},
-];
+var OFFLINE = true;
+
+var flipped = false;
+
+var movable = [];
+var board = null;
+
+var cycle = [-1, -1];
+
+function flip() {
+    flipped = !flipped;
+    render();
+}
+
+function centerOnPiece(piece) {
+    document.getElementById("xport").value = piece.x - Math.floor(size / 2);
+    document.getElementById("yport").value = piece.y - Math.floor(size / 2);
+}
+
+function cycleColor(color) {
+    var pieces = JSON.parse(board.get_pieces());
+    var i = color == "white" ? 0 : 1;
+    do {
+        cycle[i] = (cycle[i] + 1) % pieces.length;
+    } while (pieces[cycle[i]].color != color || !pieces[cycle[i]].alive || (pieces[cycle[i]].piece == "pawn" && !pieces[cycle[i]].has_moved));
+    centerOnPiece(pieces[cycle[i]]);
+    render();
+}
+
+function promote(n) {
+    var pt = ["knight", "bishop", "rook", "queen"][n];
+    var toPromoteInfo = getPieceInfo(toPromote);
+    if (OFFLINE) {
+        document.getElementById("overlay").style.display = "none";
+        board.promote("" + toPromoteInfo.y, "" + toPromoteInfo.x, pt);
+        render();
+        toPromote = null;
+        return;
+    }
+    fetch("/promote/" + toPromoteInfo.y + "/" + toPromoteInfo.x + "/" + pt)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Request failed with status ${response.status}`)
+            }
+            return response.text()
+        })
+        .then(data => {
+            document.getElementById("overlay").style.display = "none";
+            board.promote("" + toPromoteInfo.y, "" + toPromoteInfo.x, pt);
+            render();
+            toPromote = null;
+        })
+        .catch(error => console.log(error))
+
+}
+
+window.promote = promote;
+window.cycleColor = cycleColor;
+window.flip = flip;
+
 
 function displayed(x, y) {
     x -= xCord;
+    if (flipped) {
+        y = -y;
+    }
     y -= yCord;
     return x >= 0 && x < size && y >= 0 && y < size;
 }
-
-function getPiece(x, y) {
-    for (var i = 0; i < pieces.length; i++) {
-        var piece = pieces[i];
-        if (piece.x == x && piece.y == y && piece.alive) {
-            return piece;
-        }
+function getSpace(x, y) {
+    x -= xCord;
+    if (flipped) {
+        y = -y;
     }
-    return null;
+    y -= yCord;
+    var d = x + (y) * size;
+    return d;
 }
-
-function addPawns() {
-    for (var i = 0; i < size; i++) {
-        var x = xCord + i;
-        if (displayed(x, 1) && !madePawnsBlack.has(x)) {
-            pieces.push(
-    {'x': x, 'y': 1, 'type': 'black_pawn', 'color': 'black', 'alive': true}
-            );
-            madePawnsBlack.add(x);
-        }
-        if (displayed(x, 6) && !madePawnsWhite.has(x)) {
-            pieces.push(
-    {'x': x, 'y': 6, 'type': 'white_pawn', 'color': 'white', 'alive': true}
-            );
-            madePawnsWhite.add(x);
-        }
-    }
+function getPiece(x, y) {
+    return board.get_piece_at("" + y, "" + x);
+}
+function getPieceInfo(i) {
+    return JSON.parse(board.get_piece_info(i));
 }
 
 function addSquares() {
     var palette = document.getElementById("zoomable");
-	while (palette.firstChild) {
-		palette.removeChild(palette.firstChild);
-	}
-    for (var i = 0; i < size*size; i++) {
+    while (palette.firstChild) {
+        palette.removeChild(palette.firstChild);
+    }
+    for (var i = 0; i < size * size; i++) {
         var n = document.createElement("li");
         n['data-x'] = i % size;
-        n['data-y'] = Math.floor(i/size);
+        n['data-y'] = Math.floor(i / size);
+        if (flipped) {
+            n['data-y'] = Math.floor(i / size);
+        }
         n.id = cell_prefix + i;
         n.onmousedown = moveBegin;
         n.onmouseup = moveEnd;
         n.ontouchstart = startTouch;
         n.ontouchmove = moveTouch;
-		n.style.width = 100/size + '%';
-		n.style.height = n.style.width;
+        n.style.width = 100 / size + '%';
+        n.style.height = n.style.width;
         palette.appendChild(n);
     }
 }
 
 function render() {
-    xCord = parseInt(document.getElementById("xport").value);
-    yCord = parseInt(document.getElementById("yport").value);
     var newSize = parseInt(document.getElementById("zoom").value);
     if (size != newSize) {
         size = newSize;
         addSquares();
     }
-    addPawns();
-    for (var i = 0; i < size*size; i++) {
+    xCord = parseInt(document.getElementById("xport").value);
+    yCord = parseInt(document.getElementById("yport").value);
+    if (flipped) {
+        yCord = -yCord - size + 1;
+    }
+    var toMoveInfo = getPieceInfo(toMove);
+    for (var i = 0; i < size * size; i++) {
         var n = document.getElementById(cell_prefix + i);
         n.className = "";
-        var f = size % 2 == 0? Math.floor(i/size) : 0;
-        n.classList.add((f + i + xCord) % 2 == 0? "white_square" : "black_square");
+        var f = size % 2 == 0 ? Math.floor(i / size) : 0;
+        n.classList.add((f + i + xCord) % 2 == 0 ? "white_square" : "black_square");
     }
+    board.add_pawns("" + xCord, "" + size);
+    var pieces = JSON.parse(board.get_pieces());
     for (var i = 0; i < pieces.length; i++) {
         var piece = pieces[i];
         if (displayed(piece.x, piece.y) && piece.alive) {
-            var d = piece.x - xCord + (piece.y - yCord) * size;
+            var d = getSpace(piece.x, piece.y);
             var n = document.getElementById(cell_prefix + d);
             n.classList.add(piece.type);
+            if (piece.x == toMoveInfo.x && piece.y == toMoveInfo.y && toMove) {
+                n.classList.add("selected");
+            }
+        }
+    }
+    if (toMove != null) {
+        movable.length = 0;
+        getMoves();
+        console.log(movable);
+        for (var i = 0; i < movable.length; i++) {
+            var space = movable[i];
+            var d = getSpace(space[1], space[0]);
+            var n = document.getElementById(cell_prefix + d);
+            if (n) {
+                n.classList.add("movable");
+            }
         }
     }
 }
 
-window.onload = function() {
+window.onload = function () {
     addSquares();
     document.getElementById('xport').oninput = render;
     document.getElementById('yport').oninput = render;
     var deltas = document.getElementsByClassName("delta");
     for (var i = 0; i < deltas.length; i++) {
         deltas[i].onclick = delta;
-    } 
-    render();
+    }
 };
 
 function delta(e) {
@@ -126,26 +184,42 @@ function delta(e) {
 }
 
 function moveBegin(e) {
-    var grabbedPiece = getPiece(parseInt(e.target['data-x']) + xCord, parseInt(e.target['data-y']) + yCord);
-    if (grabbedPiece && !toMove) {
+    var y = parseInt(e.target['data-y']);
+    if (flipped) {
+        y = -y - 2 * yCord;
+    }
+    var grabbedPiece = getPiece(parseInt(e.target['data-x']) + xCord, y + yCord);
+    console.log(y, y + yCord, grabbedPiece);
+    if (grabbedPiece != null && toMove == null) {
         toMove = grabbedPiece;
+        movable = [];
+        getMoves();
     }
     render();
 }
 
 function moveEnd(e) {
     var x = parseInt(e.target['data-x']) + xCord;
-    var y = parseInt(e.target['data-y']) + yCord;
+    var y = parseInt(e.target['data-y']);
+    if (flipped) {
+        y = -y - 2 * yCord;
+    }
+    y += yCord;
     var grabbedPiece = getPiece(x, y);
-    if (toMove && (!grabbedPiece || grabbedPiece.color != toMove.color) && toMove != grabbedPiece) { 
-        if (movable(toMove, x, y)) {
-            toMove.x = x;
-            toMove.y = y;
-            if (grabbedPiece) {
-                grabbedPiece.alive = false;
+    var grabbedPieceInfo = getPieceInfo(grabbedPiece);
+    var toMoveInfo = getPieceInfo(toMove);
+    if (toMove != null && toMove != grabbedPiece) {
+        if (ismovable(e) && (!grabbedPiece || grabbedPieceInfo.color != toMoveInfo.color)) {
+            make_move(x, y);
+            toMoveInfo.x = x;
+            toMoveInfo.y = y;
+            if ((toMoveInfo.type == "white_pawn" && y == 0) || (toMoveInfo.type == "black_pawn" && y == 7)) {
+                document.getElementById("overlay").style.display = "block";
+                toPromote = toMove;
             }
         }
         toMove = null;
+        movable = [];
     }
     render();
 }
@@ -167,138 +241,175 @@ function startTouch(e) {
     scrollFromYS = parseInt(document.getElementById("yport").value);
 }
 
-function movable(piece, xx, yy) {
-    var x = piece.x;
-    var y = piece.y;
-    switch (piece.type) {
-        case "black_pawn":
-            if (x == xx && y + 1 == yy) {
-                return true;
-            }
-            if (x == xx && y + 2 == yy && y == 1) {
-                return true;
-            }
-            if (Math.abs(x - xx) <= 1 && y + 1 == yy && getPiece(xx, yy)) {
-                return true;
-            }
-            break;
-        case "white_pawn":
-            if (x == xx && y - 1 == yy) {
-                return true;
-            }
-            if (x == xx && y - 2 == yy && y == 6) {
-                return true;
-            }
-            if (Math.abs(x - xx) <= 1 && y - 1 == yy && getPiece(xx, yy)) {
-                return true;
-            }
-            break;
-        case "black_queen":
-        case "white_queen":
-            for (var i = 1; i < 8; i += 1) {
-                if (x + i == xx && y + i == yy) { return true; }
-                if (getPiece(x + i, y + i)) { break; }
-            }
-            for (var i = 1; i < 8; i += 1) {
-                if (x + i == xx && y - i == yy) { return true; }
-                if (getPiece(x + i, y - i)) { break; }
-            }
-            for (var i = 1; i < 8; i += 1) {
-                if (x - i == xx && y - i == yy) { return true; }
-                if (getPiece(x - i, y - i)) { break; }
-            }
-            for (var i = 1; i < 8; i += 1) {
-                if (x - i == xx && y + i == yy) { return true; }
-                if (getPiece(x - i, y + i)) { break; }
-            }
-            for (var i = 1; i < 8; i += 1) {
-                if (x + i == xx && y == yy) { return true; }
-                if (getPiece(x + i, y)) { break; }
-            }
-            for (var i = 1; i < 8; i += 1) {
-                if (x == xx && y - i == yy) { return true; }
-                if (getPiece(x, y - i)) { break; }
-            }
-            for (var i = 1; i < 8; i += 1) {
-                if (x - i == xx && y == yy) { return true; }
-                if (getPiece(x - i, y)) { break; }
-            }
-            for (var i = 1; i < 8; i += 1) {
-                if (x == xx && y + i == yy) { return true; }
-                if (getPiece(x, y + i)) { break; }
-            }
-            break;
-        case "black_bishop":
-        case "white_bishop":
-            for (var i = 1; i < 8; i += 1) {
-                if (x + i == xx && y + i == yy) { return true; }
-                if (getPiece(x + i, y + i)) { break; }
-            }
-            for (var i = 1; i < 8; i += 1) {
-                if (x + i == xx && y - i == yy) { return true; }
-                if (getPiece(x + i, y - i)) { break; }
-            }
-            for (var i = 1; i < 8; i += 1) {
-                if (x - i == xx && y - i == yy) { return true; }
-                if (getPiece(x - i, y - i)) { break; }
-            }
-            for (var i = 1; i < 8; i += 1) {
-                if (x - i == xx && y + i == yy) { return true; }
-                if (getPiece(x - i, y + i)) { break; }
-            }
-            break;
-        case "black_rook":
-        case "white_rook":
-            for (var i = 1; i < 8; i += 1) {
-                if (x + i == xx && y == yy) { return true; }
-                if (getPiece(x + i, y)) { break; }
-            }
-            for (var i = 1; i < 8; i += 1) {
-                if (x == xx && y - i == yy) { return true; }
-                if (getPiece(x, y - i)) { break; }
-            }
-            for (var i = 1; i < 8; i += 1) {
-                if (x - i == xx && y == yy) { return true; }
-                if (getPiece(x - i, y)) { break; }
-            }
-            for (var i = 1; i < 8; i += 1) {
-                if (x == xx && y + i == yy) { return true; }
-                if (getPiece(x, y + i)) { break; }
-            }
-            break;
-        case "black_knight":
-        case "white_knight":
-            if (x - 1 == xx && y + 2 == yy) {
-                return true;
-            }
-            if (x - 1 == xx && y - 2 == yy) {
-                return true;
-            }
-            if (x + 1 == xx && y - 2 == yy) {
-                return true;
-            }
-            if (x + 1 == xx && y + 2 == yy) {
-                return true;
-            }
-            if (x - 2 == xx && y - 1 == yy) {
-                return true;
-            }
-            if (x - 2 == xx && y + 1 == yy) {
-                return true;
-            }
-            if (x + 2 == xx && y - 1 == yy) {
-                return true;
-            }
-            if (x + 2 == xx && y + 1 == yy) {
-                return true;
-            }
-            break;
-        case "white_king":
-        case "black_king":
-            if (Math.abs(x - xx) <= 1 && Math.abs(y - yy) <= 1) {
-                return true;
-            }
-            break;
+function ismovable(e) {
+    return e.target.classList.contains("movable");
+}
+
+function getBoard() {
+    if (OFFLINE) {
+        return;
     }
-    return false;
+    fetch("/board/" + gTurn)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Request failed with status ${response.status}`)
+            }
+            return response.text();
+        }).then(text => {
+            var data = JSON.parse(text);
+            board.build(text);
+            gTurn = parseInt(data["turn"]) + 1;
+            render();
+            getBoard();
+        })
+        .catch(error => {
+            console.log(error);
+            gTurn = 0;
+            setTimeout(getBoard, 1000);
+        })
+}
+
+function getMoves() {
+    var toMoveInfo = getPieceInfo(toMove);
+    console.log(toMove, toMoveInfo);
+    var yyCord = yCord;
+    if (flipped) {
+        yyCord = -yyCord - size + 1;
+    }
+    movable = JSON.parse(board.get_legal_moves("" + toMoveInfo.y, "" + toMoveInfo.x, "" + yyCord, "" + xCord, "" + size));
+}
+
+function make_move(x, y) {
+    var toMoveInfo = getPieceInfo(toMove);
+    var tomx = toMoveInfo.x;
+    var tomy = toMoveInfo.y;
+    if (OFFLINE) {
+        board.do_move("" + tomy, "" + tomx, "" + y, "" + x);
+        render();
+        return;
+    }
+    fetch("/move/" + tomy + "/" + tomx + "/" + y + "/" + x)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Request failed with status ${response.status}`)
+            }
+            return response.text()
+        })
+        .then(data => {
+            board.do_move("" + tomy, "" + tomx, "" + y, "" + x);
+            render();
+        })
+        .catch(error => console.log(error))
+}
+
+
+init()
+    .then(() => {
+        board = new WasmBoard();
+        if (OFFLINE) {
+            place_pieces()
+            return;
+        }
+        get_board();
+    });
+
+
+function place_pieces() {
+    board.place_piece(
+        "rook",
+        false,
+        "0",
+        "0",
+    );
+    board.place_piece(
+        "rook",
+        true,
+        "7",
+        "0",
+    );
+    board.place_piece(
+        "knight",
+        false,
+        "0",
+        "1",
+    );
+    board.place_piece(
+        "knight",
+        true,
+        "7",
+        "1",
+    );
+    board.place_piece(
+        "bishop",
+        false,
+        "0",
+        "2",
+    );
+    board.place_piece(
+        "bishop",
+        true,
+        "7",
+        "2",
+    );
+    board.place_piece(
+        "queen",
+        false,
+        "0",
+        "3",
+    );
+    board.place_piece(
+        "queen",
+        true,
+        "7",
+        "3",
+    );
+    board.place_piece(
+        "king",
+        false,
+        "0",
+        "4",
+    );
+    board.place_piece(
+        "king",
+        true,
+        "7",
+        "4",
+    );
+    board.place_piece(
+        "bishop",
+        false,
+        "0",
+        "5",
+    );
+    board.place_piece(
+        "bishop",
+        true,
+        "7",
+        "5",
+    );
+    board.place_piece(
+        "knight",
+        false,
+        "0",
+        "6",
+    );
+    board.place_piece(
+        "knight",
+        true,
+        "7",
+        "6",
+    );
+    board.place_piece(
+        "rook",
+        false,
+        "0",
+        "7",
+    );
+    board.place_piece(
+        "rook",
+        true,
+        "7",
+        "7",
+    );
+    render();
 }
