@@ -1,6 +1,7 @@
 use num_bigint::BigInt;
 use serde_json::Value;
 
+#[derive(Clone)]
 pub struct Motion {
     piece: usize,
     to_rank: BigInt,
@@ -19,6 +20,7 @@ impl Motion {
     }
 }
 
+#[derive(Clone)]
 pub struct Captures {
     piece: usize,
 }
@@ -29,6 +31,7 @@ impl Captures {
     }
 }
 
+#[derive(Clone)]
 pub struct Move {
     piece: usize,
     motions: Vec<Motion>,

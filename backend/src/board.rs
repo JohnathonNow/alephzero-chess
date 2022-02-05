@@ -2,7 +2,7 @@ use crate::board_serializer::{board_deserialize, board_serialize};
 use crate::moves::Move;
 use crate::pawn_rank::PawnRank;
 use crate::piece::{Color, Piece};
-use crate::piece_rules::{PieceRules, StandardChess};
+use crate::piece_rules::{PieceRules, StandardChess, self};
 use crate::piece_serializer::piece_serialize;
 use num_bigint::BigInt;
 use num_traits::Signed;
@@ -143,6 +143,7 @@ impl WasmBoard {
     }
 }
 
+#[derive(Clone)]
 pub struct Board {
     pub(crate) turn: BigInt,
     pub(crate) pieces: Vec<Piece>,
@@ -310,7 +311,7 @@ impl Board {
                 }
             }
             let good_so_far = Self::move_legal_at_all(s, rules, from_rank, from_file, to_rank, to_file);
-            good_so_far
+            good_so_far.and_then(|m| rules.would_be_in_check(s, m))
         } else {
             None //no piece there so not legal
         }

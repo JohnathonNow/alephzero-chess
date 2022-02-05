@@ -2,6 +2,7 @@ use std::{cell::RefCell, collections::HashSet};
 
 use num_bigint::BigInt;
 
+#[derive(Clone)]
 pub struct PawnRank {
     /// PawnRank tracks the movement of the infinite number of pieces from a rank
     moved: RefCell<HashSet<BigInt>>,
