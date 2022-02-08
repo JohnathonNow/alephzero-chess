@@ -14,20 +14,19 @@ var scrollFromYS = null;
 var pieces = [
     {'x': 0, 'y': 1, 'type': 'black_rook', 'color': 'black', 'alive': true},
     {'x': 1, 'y': 0, 'type': 'black_bishop', 'color': 'black', 'alive': true},
-    {'x': 4, 'y': 3, 'type': 'black_knight', 'color': 'black', 'alive': true},
-    {'x': 3, 'y': 3, 'type': 'black_bishop', 'color': 'black', 'alive': true},
+    {'x': 5, 'y': 3, 'type': 'black_knight', 'color': 'black', 'alive': true},
+    {'x': 3, 'y': 2, 'type': 'black_bishop', 'color': 'black', 'alive': true},
 
-    {'x': 5, 'y': 1, 'type': 'black_pawn', 'color': 'black', 'alive': true},
+    {'x': 4, 'y': 1, 'type': 'black_pawn', 'color': 'black', 'alive': true},
     {'x': 5, 'y': 2, 'type': 'black_pawn', 'color': 'black', 'alive': true},
-    {'x': 6, 'y': 4, 'type': 'black_pawn', 'color': 'black', 'alive': true},
+    {'x': 6, 'y': 3, 'type': 'black_pawn', 'color': 'black', 'alive': true},
+    {'x': 0, 'y': 4, 'type': 'black_pawn', 'color': 'black', 'alive': true},
 
     {'x': 1, 'y': 7, 'type': 'white_knight', 'color': 'white', 'alive': true},
     {'x': 2, 'y': 7, 'type': 'white_bishop', 'color': 'white', 'alive': true},
-    {'x': 6, 'y': 7, 'type': 'white_knight', 'color': 'white', 'alive': true},
-
-    {'x': 1, 'y': 6, 'type': 'white_pawn', 'color': 'white', 'alive': true},
-    {'x': 5, 'y': 6, 'type': 'white_pawn', 'color': 'white', 'alive': true},
-    {'x': 7, 'y': 6, 'type': 'white_pawn', 'color': 'white', 'alive': true},
+    {'x': 7, 'y': 7, 'type': 'white_rook', 'color': 'white', 'alive': true},
+    {'x': 4, 'y': 7, 'type': 'white_king', 'color': 'white', 'alive': true},
+    {'x': 3, 'y': 7, 'type': 'white_queen', 'color': 'white', 'alive': true},
 
     {'x': 0, 'y': 0, 'type': 'checker', 'color': 'black', 'alive': false},
     {'x': 3, 'y': 0, 'type': 'checker', 'color': 'black', 'alive': false},
