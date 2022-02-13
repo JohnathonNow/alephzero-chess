@@ -310,7 +310,7 @@ init()
             place_pieces()
             return;
         }
-        get_board();
+        getBoard();
     });
 
 

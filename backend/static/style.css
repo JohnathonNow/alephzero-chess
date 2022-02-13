@@ -32,6 +32,22 @@ li.movable {
     background-color: #444444;
 }
 
+
+.white_square:hover {
+   background-color: #f7f7f7;
+}
+
+.black_square:hover {
+   background-color: #5c5c5c;
+}
+
+li.movable:hover {
+   background-color: #f8a500;
+}
+
+li.selected:hover {
+   background-color: #a0a000;
+}
 .white_pawn {
    background-image: url("/pieces/white_pawn.svg");
 }
