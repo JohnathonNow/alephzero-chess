@@ -6,7 +6,7 @@ use crate::piece::{Color, Piece};
 pub fn piece_serialize(p: &Piece) -> String {
     let mut out = String::new();
     out += &format!("{{\"type\": \"{}_{}\", \"piece\": \"{}\", \"alive\": {}, \"y\": \"{}\", \"x\": \"{}\", \"color\": \"{}\", \"has_moved\": {}}}", p.get_color().to_string(), p.get_type(), p.get_type(), !p.is_captured(), p.get_rank(), p.get_file(),
-p.get_color().to_string(), p.has_moved());
+p.get_color().to_string(), p.when_moved());
     out
 }
 
@@ -25,9 +25,7 @@ pub fn piece_deserialize(s: &String) -> Option<Piece> {
     if !v["alive"].as_bool()? {
         p.capture();
     }
-    if v["has_moved"].as_bool()? {
-        p.set_has_moved();
-    }
+    p.set_has_moved(v["has_moved"].as_u64()? as usize);
 
     //TODO do this better
     Some(p)

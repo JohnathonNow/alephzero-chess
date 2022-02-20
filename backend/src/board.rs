@@ -86,6 +86,9 @@ impl WasmBoard {
         )?;
         self.board.do_move(m)
     }
+    pub fn undo_move(&mut self) -> Option<usize> {
+        self.board.undo_move()
+    }
     pub fn is_move_legal(
         &mut self,
         rank: String,
@@ -192,7 +195,7 @@ impl Board {
         m: &Move
     ) -> Option<usize> {
         for motion in m.get_motions() {
-            self.pieces[motion.get_piece()].goto(motion.get_rank(), motion.get_file());
+            self.pieces[motion.get_piece()].goto(motion.get_rank(), motion.get_file(), self.moves.len() + 1);
         }
         for capture in m.get_captures() {
             self.pieces[capture.get_piece()].capture();
@@ -205,6 +208,21 @@ impl Board {
     ) -> Option<usize> {
         self.do_move_ref(&m);
         self.moves.push(m);
+        Some(0)
+    }
+    pub(crate) fn undo_move(
+        &mut self,
+    ) -> Option<usize> {
+        let m = self.moves.pop()?;
+        for motion in m.get_motions() {
+            self.pieces[motion.get_piece()].goto(motion.get_from_rank(), motion.get_from_file(), self.moves.len() + 1);
+            if self.pieces[motion.get_piece()].when_moved() >= self.moves.len() {
+                self.pieces[motion.get_piece()].set_has_moved(0);
+            }
+        }
+        for capture in m.get_captures() {
+            self.pieces[capture.get_piece()].uncapture();
+        }
         Some(0)
     }
     pub(crate) fn get_piece_at(&mut self, rank: &BigInt, file: &BigInt) -> Option<usize> {

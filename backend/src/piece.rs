@@ -22,7 +22,7 @@ pub struct Piece {
     rank: BigInt,
     file: BigInt,
     captured: bool,
-    has_moved: bool,
+    ply_moved: usize,
     color: Color,
 }
 
@@ -34,7 +34,7 @@ impl Piece {
             rank,
             file,
             captured: false,
-            has_moved: false,
+            ply_moved: 0,
         }
     }
     pub fn get_type(&self) -> &String {
@@ -58,15 +58,15 @@ impl Piece {
     }
     #[cfg(not(features = "server"))]
     pub fn has_moved(&self) -> bool {
-        self.has_moved
+        self.ply_moved != 0
     }
     #[cfg(not(features = "server"))]
-    pub fn set_has_moved(&mut self) {
-        self.has_moved = true;
+    pub fn when_moved(&self) -> usize {
+        self.ply_moved 
     }
     #[cfg(not(features = "server"))]
-    pub fn set_has_moved_arg(&mut self, has_moved: bool) {
-        self.has_moved = has_moved;
+    pub fn set_has_moved(&mut self, ply: usize) {
+        self.ply_moved = ply;
     }
     #[cfg(not(features = "server"))]
     pub(crate) fn capture(&mut self) {
@@ -77,9 +77,11 @@ impl Piece {
         self.captured = false;
     }
     #[cfg(not(features = "server"))]
-    pub(crate) fn goto(&mut self, rank: &BigInt, file: &BigInt) {
+    pub(crate) fn goto(&mut self, rank: &BigInt, file: &BigInt, ply: usize) {
         self.rank = rank.clone();
         self.file = file.clone();
-        self.has_moved = true;
+        if self.ply_moved  == 0 {
+            self.ply_moved = ply;
+        }
     }
 }

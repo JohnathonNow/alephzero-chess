@@ -89,7 +89,7 @@ fn is_pawn_move_legal(board: &mut Board, i: usize, to_rank: &BigInt, to_file: &B
     if board.pieces[i].get_file() == to_file && to_rank == &(board.pieces[i].get_rank() + dir) {
         //single move
         if let None = board.get_piece_at(to_rank, to_file) {
-            return Some(Move::standard(i, to_rank, to_file));
+            return Some(Move::standard(i, to_rank, to_file, board.pieces[i].get_rank(), board.pieces[i].get_file()));
         }
     }
     if board.pieces[i].get_file() == to_file
@@ -99,7 +99,7 @@ fn is_pawn_move_legal(board: &mut Board, i: usize, to_rank: &BigInt, to_file: &B
         //double move at start
         if let None = board.get_piece_at(to_rank, to_file) {
             if let None = board.get_piece_at(&(board.pieces[i].get_rank() + dir), to_file) {
-                return Some(Move::standard(i, to_rank, to_file));
+                return Some(Move::standard(i, to_rank, to_file, board.pieces[i].get_rank(), board.pieces[i].get_file()));
             }
         }
     }
@@ -108,7 +108,7 @@ fn is_pawn_move_legal(board: &mut Board, i: usize, to_rank: &BigInt, to_file: &B
     {
         //take diagonally
         if let Some(x) = board.get_piece_at(to_rank, to_file) {
-            return Some(Move::capture(i, to_rank, to_file, x));
+            return Some(Move::capture(i, to_rank, to_file, board.pieces[i].get_rank(), board.pieces[i].get_file(), x));
         }
         let rank = board.pieces[i].get_rank().clone(); //bad
                                                        //en passant!
@@ -116,7 +116,7 @@ fn is_pawn_move_legal(board: &mut Board, i: usize, to_rank: &BigInt, to_file: &B
             if board.pieces[p].get_type() == "pawn"
                 && board.pieces[p].get_color() != board.pieces[i].get_color()
                 && board.last_move().map_or(false, |x| x == p) {
-                    return Some(Move::capture(i, to_rank, to_file, p))
+                    return Some(Move::capture(i, to_rank, to_file, board.pieces[i].get_rank(), board.pieces[i].get_file(), p))
                 }
         }
     }
@@ -129,11 +129,11 @@ fn is_knight_move_legal(board: &mut Board, i: usize, to_rank: &BigInt, to_file: 
     let mut move_ = maybe_capture(board, i, to_rank, to_file);
     if dr.abs() == 1.into() {
         if (df.abs() - 2) % STANDARD_BOARD_SIZE == 0.into() {
-            return Some(move_.add_motion(i, to_rank, to_file));
+            return Some(move_.add_motion(i, to_rank, to_file, board.pieces[i].get_rank(), board.pieces[i].get_file()));
         }
     } else if df.abs() == 1.into() {
         if (dr.abs() - 2) % STANDARD_BOARD_SIZE == 0.into() {
-            return Some(move_.add_motion(i, to_rank, to_file));
+            return Some(move_.add_motion(i, to_rank, to_file, board.pieces[i].get_rank(), board.pieces[i].get_file()));
         }
     }
     None 
@@ -149,7 +149,7 @@ fn is_rook_move_legal(board: &mut Board, i: usize, to_rank: &BigInt, to_file: &B
         to_rank,
         to_file,
     ) {
-        Some(move_.add_motion(i, to_rank, to_file))
+        Some(move_.add_motion(i, to_rank, to_file, board.pieces[i].get_rank(), board.pieces[i].get_file()))
     } else {
         None
     }
@@ -166,7 +166,7 @@ fn is_bishop_move_legal(board: &mut Board, i: usize, to_rank: &BigInt, to_file: 
         to_rank,
         to_file,
     ) {
-        Some(move_.add_motion(i, to_rank, to_file))
+        Some(move_.add_motion(i, to_rank, to_file, board.pieces[i].get_rank(), board.pieces[i].get_file()))
     } else {
         None
     }
@@ -194,7 +194,7 @@ fn is_king_move_legal(board: &mut Board, i: usize, to_rank: &BigInt, to_file: &B
             if !board.pieces[z].has_moved()
                 && board.get_piece_at(to_rank, &6.into()).is_none()
                 && board.get_piece_at(to_rank, &5.into()).is_none() {
-                    return Some(Move::standard(i, to_rank, to_file).add_motion(z, to_rank, &5.into()))
+                    return Some(Move::standard(i, to_rank, to_file, board.pieces[i].get_rank(), board.pieces[i].get_file()).add_motion(z, to_rank, &5.into(), board.pieces[z].get_rank(), board.pieces[z].get_file()))
                 }
         }
     }
@@ -204,7 +204,7 @@ fn is_king_move_legal(board: &mut Board, i: usize, to_rank: &BigInt, to_file: &B
                 && board.get_piece_at(to_rank, &1.into()).is_none()
                 && board.get_piece_at(to_rank, &2.into()).is_none()
                 && board.get_piece_at(to_rank, &3.into()).is_none() {
-                    return Some(Move::standard(i, to_rank, to_file).add_motion(z, to_rank, &3.into()))
+                    return Some(Move::standard(i, to_rank, to_file, board.pieces[i].get_rank(), board.pieces[i].get_file()).add_motion(z, to_rank, &3.into(), board.pieces[z].get_rank(), board.pieces[z].get_file()))
                 }
         }
     }

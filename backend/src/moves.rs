@@ -4,6 +4,8 @@ use serde_json::Value;
 #[derive(Clone)]
 pub struct Motion {
     piece: usize,
+    from_rank: BigInt,
+    from_file: BigInt,
     to_rank: BigInt,
     to_file: BigInt,
 }
@@ -17,6 +19,12 @@ impl Motion {
     }
     pub(crate) fn get_file(&self) -> &BigInt {
         &self.to_file
+    }
+    pub(crate) fn get_from_rank(&self) -> &BigInt {
+        &self.from_rank
+    }
+    pub(crate) fn get_from_file(&self) -> &BigInt {
+        &self.from_file
     }
 }
 
@@ -41,19 +49,19 @@ impl Move {
     pub fn new(piece: usize) -> Move {
         Self { piece, motions: Vec::new(), captures: Vec::new() }
     }
-    pub fn standard(piece: usize, to_rank: &BigInt, to_file: &BigInt) -> Move {
+    pub fn standard(piece: usize, to_rank: &BigInt, to_file: &BigInt, from_rank: &BigInt, from_file: &BigInt) -> Move {
         let mut move_ = Move::new(piece);
-        move_.add_motion(piece, to_rank, to_file)
+        move_.add_motion(piece, to_rank, to_file, from_rank, from_file)
     }
-    pub fn capture(piece: usize, to_rank: &BigInt, to_file: &BigInt, captured: usize) -> Move {
-        Self::standard(piece, to_rank, to_file).add_capture(captured)
+    pub fn capture(piece: usize, to_rank: &BigInt, to_file: &BigInt, from_rank: &BigInt, from_file: &BigInt, captured: usize) -> Move {
+        Self::standard(piece, to_rank, to_file, from_rank, from_file).add_capture(captured)
     }
     pub fn add_capture(mut self, piece: usize) -> Self {
         self.captures.push(Captures { piece });
         self
     }
-    pub fn add_motion(mut self, piece: usize, to_rank: &BigInt, to_file: &BigInt) -> Self {
-        self.motions.push(Motion { piece, to_rank: to_rank.clone(), to_file: to_file.clone() });
+    pub fn add_motion(mut self, piece: usize, to_rank: &BigInt, to_file: &BigInt, from_rank: &BigInt, from_file: &BigInt) -> Self {
+        self.motions.push(Motion { piece, to_rank: to_rank.clone(), to_file: to_file.clone(), from_rank: from_rank.clone(), from_file: from_file.clone()  });
         self
     }
     pub fn get_piece(&self) -> usize {

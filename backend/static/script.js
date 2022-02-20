@@ -68,10 +68,15 @@ function promote(n) {
         .catch(error => console.log(error))
 
 }
+function undo() {
+    console.log(board.undo_move());
+    render();
+}
 
 window.promote = promote;
 window.cycleColor = cycleColor;
 window.flip = flip;
+window.undo = undo;
 
 
 function displayed(x, y) {
@@ -94,6 +99,7 @@ function getSpace(x, y) {
 function getPiece(x, y) {
     return board.get_piece_at("" + y, "" + x);
 }
+
 function getPieceInfo(i) {
     return JSON.parse(board.get_piece_info(i));
 }
