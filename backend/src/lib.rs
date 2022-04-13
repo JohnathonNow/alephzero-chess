@@ -6,3 +6,4 @@ mod piece_rules;
 //mod error;
 mod piece_serializer;
 mod moves;
+mod ai;

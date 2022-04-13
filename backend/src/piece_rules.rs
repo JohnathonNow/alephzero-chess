@@ -115,6 +115,10 @@ fn is_pawn_move_legal(board: &mut Board, i: usize, to_rank: &BigInt, to_file: &B
         if let Some(p) = board.get_piece_at(&rank, to_file) {
             if board.pieces[p].get_type() == "pawn"
                 && board.pieces[p].get_color() != board.pieces[i].get_color()
+                && board.get_last_move().map_or(false, |m| match m.get_motions().first() {
+                    Some(it) => it.get_from_rank() - it.get_rank() == 2.into(),
+                    None => return false,
+                })
                 && board.last_move().map_or(false, |x| x == p) {
                     return Some(Move::capture(i, to_rank, to_file, board.pieces[i].get_rank(), board.pieces[i].get_file(), p))
                 }

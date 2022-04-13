@@ -9,6 +9,7 @@ use actix_web::{get, HttpResponse};
 #[cfg(feature = "server")]
 use actix_web::{web, App, HttpServer};
 use num_bigint::BigInt;
+mod ai;
 mod board;
 mod board_serializer;
 mod pawn_rank;

@@ -8,7 +8,7 @@ use num_bigint::BigInt;
 use num_traits::Signed;
 use wasm_bindgen::prelude::*;
 pub const STANDARD_BOARD_SIZE: i32 = 8;
-
+use crate::ai;
 //#[derive(Serialize, Deserialize)]
 
 #[wasm_bindgen]
@@ -24,6 +24,14 @@ impl WasmBoard {
         Self {
             board: Board::new(),
             rules: StandardChess::new(),
+        }
+    }
+    pub fn ai(&mut self) -> bool {
+        if let Some(m) = ai::ai(&mut self.board, &mut self.rules) {
+            self.board.do_move(m);
+            false
+        } else {
+            true
         }
     }
     pub fn build(&mut self, s: String) {
@@ -186,6 +194,9 @@ impl Board {
         }
         self.pieces.push(x);
         Some(self.pieces.len() - 1)
+    }
+    pub(crate) fn get_last_move(&self) -> Option<&Move> {
+        self.moves.last()
     }
     pub(crate) fn last_move(&self) -> Option<usize> {
         self.moves.last().map(|m| m.get_piece())

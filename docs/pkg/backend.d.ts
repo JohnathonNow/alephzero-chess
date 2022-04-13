@@ -8,6 +8,10 @@ export class WasmBoard {
 */
   constructor();
 /**
+* @returns {boolean}
+*/
+  ai(): boolean;
+/**
 * @param {string} s
 */
   build(s: string): void;
@@ -56,6 +60,10 @@ export class WasmBoard {
 */
   do_move(rank: string, file: string, to_rank: string, to_file: string): number | undefined;
 /**
+* @returns {number | undefined}
+*/
+  undo_move(): number | undefined;
+/**
 * @param {string} rank
 * @param {string} file
 * @param {string} to_rank
@@ -84,6 +92,7 @@ export interface InitOutput {
   readonly memory: WebAssembly.Memory;
   readonly __wbg_wasmboard_free: (a: number) => void;
   readonly wasmboard_new: () => number;
+  readonly wasmboard_ai: (a: number) => number;
   readonly wasmboard_build: (a: number, b: number, c: number) => void;
   readonly wasmboard_deconstruct: (a: number, b: number) => void;
   readonly wasmboard_place_piece: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => void;
@@ -92,6 +101,7 @@ export interface InitOutput {
   readonly wasmboard_get_piece_info: (a: number, b: number, c: number) => void;
   readonly wasmboard_promote: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => void;
   readonly wasmboard_do_move: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number) => void;
+  readonly wasmboard_undo_move: (a: number, b: number) => void;
   readonly wasmboard_is_move_legal: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => number;
   readonly wasmboard_get_pieces: (a: number, b: number) => void;
   readonly wasmboard_get_legal_moves: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number, l: number) => void;
@@ -99,6 +109,7 @@ export interface InitOutput {
   readonly __wbindgen_realloc: (a: number, b: number, c: number) => number;
   readonly __wbindgen_add_to_stack_pointer: (a: number) => number;
   readonly __wbindgen_free: (a: number, b: number) => void;
+  readonly __wbindgen_exn_store: (a: number) => void;
 }
 
 /**

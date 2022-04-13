@@ -13,7 +13,8 @@ var scrollFromYS = null;
 var gTurn = 0;
 var toPromote = null;
 
-var OFFLINE = false;
+var OFFLINE = true;
+var AI = false;
 
 var flipped = false;
 
@@ -222,6 +223,13 @@ function moveEnd(e) {
             if ((toMoveInfo.type == "white_pawn" && y == 0) || (toMoveInfo.type == "black_pawn" && y == 7)) {
                 document.getElementById("overlay").style.display = "block";
                 toPromote = toMove;
+            }
+            render();
+            if (AI) {
+                if (board.ai()) {
+                    alert("YOU WON");
+                }
+                render();
             }
         }
         toMove = null;
