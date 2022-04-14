@@ -300,6 +300,7 @@ function make_move(x, y) {
     if (OFFLINE) {
         board.do_move("" + tomy, "" + tomx, "" + y, "" + x);
         render();
+        console.log("It is " + board.is_checkmate());
         return;
     }
     fetch("/move/" + tomy + "/" + tomx + "/" + y + "/" + x)

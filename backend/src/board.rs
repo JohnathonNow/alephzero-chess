@@ -2,7 +2,7 @@ use crate::board_serializer::{board_deserialize, board_serialize};
 use crate::moves::Move;
 use crate::pawn_rank::PawnRank;
 use crate::piece::{Color, Piece};
-use crate::piece_rules::{PieceRules, StandardChess, self};
+use crate::piece_rules::{self, PieceRules, StandardChess};
 use crate::piece_serializer::piece_serialize;
 use num_bigint::BigInt;
 use num_traits::Signed;
@@ -86,7 +86,9 @@ impl WasmBoard {
         to_rank: String,
         to_file: String,
     ) -> Option<usize> {
-        let m = Board::move_legal(&mut self.board, &self.rules,
+        let m = Board::move_legal(
+            &mut self.board,
+            &self.rules,
             &rank.parse::<BigInt>().ok()?,
             &file.parse::<BigInt>().ok()?,
             &to_rank.parse::<BigInt>().ok()?,
@@ -113,6 +115,14 @@ impl WasmBoard {
             &to_file.parse::<BigInt>().ok()?,
         ))
     }
+    pub fn is_checkmate(&mut self) -> bool {
+        let c = if self.board.moves.len() % 2 == 0 {
+            Color::White
+        } else {
+            Color::Black
+        };
+        self.rules.is_checkmate(&mut self.board, c)
+    }
     pub fn get_pieces(&mut self) -> Option<String> {
         let mut s = Vec::new();
         for piece in &self.board.pieces {
@@ -129,28 +139,28 @@ impl WasmBoard {
         sfile: String,
         swinx: String,
         swiny: String,
-        szoom: String
+        szoom: String,
     ) -> Option<String> {
-    let rank = srank.parse::<BigInt>().ok()?;
-    let file = sfile.parse::<BigInt>().ok()?;
-    let winx = swinx.parse::<BigInt>().ok()?;
-    let winy = swiny.parse::<BigInt>().ok()?;
-    let zoom = szoom.parse::<BigInt>().ok()?;
-    let mut xx = winx.clone();
-    let winxwidth = winx + zoom.clone();
-    let winyheight = winy.clone() + zoom;
-    let mut results = Vec::new();
-    while xx < winxwidth {
-        let mut yy = winy.clone();
-        while yy < winyheight {
-            if Board::is_move_legal(&mut self.board, &self.rules, &rank, &file, &xx, &yy) {
-                results.push(format!("[{}, {}]", xx, yy));
+        let rank = srank.parse::<BigInt>().ok()?;
+        let file = sfile.parse::<BigInt>().ok()?;
+        let winx = swinx.parse::<BigInt>().ok()?;
+        let winy = swiny.parse::<BigInt>().ok()?;
+        let zoom = szoom.parse::<BigInt>().ok()?;
+        let mut xx = winx.clone();
+        let winxwidth = winx + zoom.clone();
+        let winyheight = winy.clone() + zoom;
+        let mut results = Vec::new();
+        while xx < winxwidth {
+            let mut yy = winy.clone();
+            while yy < winyheight {
+                if Board::is_move_legal(&mut self.board, &self.rules, &rank, &file, &xx, &yy) {
+                    results.push(format!("[{}, {}]", xx, yy));
+                }
+                yy += 1;
             }
-            yy += 1;
+            xx += 1;
         }
-        xx += 1;
-    }
-    Some(format!("[{}]", results.join(",")))
+        Some(format!("[{}]", results.join(",")))
     }
 }
 
@@ -177,7 +187,7 @@ impl Board {
             white_king: 0,
         }
     }
-    pub fn promote(&mut self, rank: &BigInt  , file: &BigInt , new_type: String) -> Option<usize> {
+    pub fn promote(&mut self, rank: &BigInt, file: &BigInt, new_type: String) -> Option<usize> {
         self.get_piece_at(rank, file).and_then(|i| {
             self.pieces[i].set_type(new_type);
             Some(i)
@@ -201,32 +211,32 @@ impl Board {
     pub(crate) fn last_move(&self) -> Option<usize> {
         self.moves.last().map(|m| m.get_piece())
     }
-    pub(crate) fn do_move_ref(
-        &mut self,
-        m: &Move
-    ) -> Option<usize> {
+    pub(crate) fn do_move_ref(&mut self, m: &Move) -> Option<usize> {
         for motion in m.get_motions() {
-            self.pieces[motion.get_piece()].goto(motion.get_rank(), motion.get_file(), self.moves.len() + 1);
+            self.pieces[motion.get_piece()].goto(
+                motion.get_rank(),
+                motion.get_file(),
+                self.moves.len() + 1,
+            );
         }
         for capture in m.get_captures() {
             self.pieces[capture.get_piece()].capture();
         }
         Some(0)
     }
-    pub(crate) fn do_move(
-        &mut self,
-        m: Move
-    ) -> Option<usize> {
+    pub(crate) fn do_move(&mut self, m: Move) -> Option<usize> {
         self.do_move_ref(&m);
         self.moves.push(m);
         Some(0)
     }
-    pub(crate) fn undo_move(
-        &mut self,
-    ) -> Option<usize> {
+    pub(crate) fn undo_move(&mut self) -> Option<usize> {
         let m = self.moves.pop()?;
         for motion in m.get_motions() {
-            self.pieces[motion.get_piece()].goto(motion.get_from_rank(), motion.get_from_file(), self.moves.len() + 1);
+            self.pieces[motion.get_piece()].goto(
+                motion.get_from_rank(),
+                motion.get_from_file(),
+                self.moves.len() + 1,
+            );
             if self.pieces[motion.get_piece()].when_moved() >= self.moves.len() {
                 self.pieces[motion.get_piece()].set_has_moved(0);
             }
@@ -339,7 +349,8 @@ impl Board {
                     return None;
                 }
             }
-            let good_so_far = Self::move_legal_at_all(s, rules, from_rank, from_file, to_rank, to_file);
+            let good_so_far =
+                Self::move_legal_at_all(s, rules, from_rank, from_file, to_rank, to_file);
             good_so_far.and_then(|m| rules.would_be_in_check(s, m))
         } else {
             None //no piece there so not legal

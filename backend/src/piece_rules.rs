@@ -54,8 +54,7 @@ impl StandardChess {
         Some(Piece::new(piece.clone(), color, rank, file))
     }
 
-    fn is_in_check(&self, board: &mut Board, m: &Move) -> bool {
-        let c = board.pieces[m.get_piece()].get_color();
+    fn is_in_check(&self, board: &mut Board, c: Color) -> bool {
         let king = if c == Color::White {board.white_king} else {board.black_king};
         for p in 0..board.pieces.len() {
             if board.pieces[p].get_color() != c && !board.pieces[p].is_captured() {
@@ -66,6 +65,50 @@ impl StandardChess {
         }
         false
     }
+
+    pub(crate) fn is_checkmate(&self, board: &mut Board, turn: Color) -> bool {
+        if !self.is_in_check(board, turn) {
+            return false;
+        }
+        let king = if turn == Color::White {board.white_king} else {board.black_king};
+        // king moves out of check
+        let king_moves = vec![
+            (0, 1), (0, -1),
+            (1, 0), (-1, 0),
+            (1, 1), (1, -1),
+            (-1, 1), (-1, -1),
+        ];
+        for (r, f) in king_moves {
+            let to_rank = &board.pieces[king].get_rank().clone() + r;
+            let to_file = &board.pieces[king].get_file().clone() + f;
+            if Board::move_legal(board, &self, &board.pieces[king].get_rank().clone(), &board.pieces[king].get_file().clone(), &to_rank, &to_file).is_some() {
+                return false;
+            }
+        }
+        let knight_moves = vec![
+            (1, 2), (1, -2),
+            (-1, 2), (-1, -2),
+            (2, 1), (2, -1),
+            (-2, 1), (-2, -1),
+        ];
+        // knight moves to block check or capture
+        for p in 0..board.pieces.len() {
+            if board.pieces[p].get_color() == turn && !board.pieces[p].is_captured() && board.pieces[p].get_type() == "knight" {
+                for (r, f) in &knight_moves {
+                    let to_rank = board.pieces[p].get_rank().clone() + r;
+                    let to_file = board.pieces[p].get_file().clone() + f;
+                    if Board::move_legal(board, &self, &board.pieces[p].get_rank().clone(), &board.pieces[p].get_file().clone(), &to_rank, &to_file).is_some() {
+                        return false;
+                    }
+                }
+            }
+        }
+        // pawn moves to capture
+        // pawn moves to block check
+        // other moves to capture
+        // other moves to block
+        true
+    }
     
     pub(crate) fn would_be_in_check(&self,
         board: &mut Board,
@@ -73,7 +116,8 @@ impl StandardChess {
     ) -> Option<Move> {
         let mut b = board.clone();
         b.do_move_ref(&m);
-        if self.is_in_check(&mut b, &m) {
+        let c = board.pieces[m.get_piece()].get_color();
+        if self.is_in_check(&mut b, c) {
             None
         } else {
             Some(m)
