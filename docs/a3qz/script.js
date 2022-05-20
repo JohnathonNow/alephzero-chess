@@ -423,7 +423,13 @@ function compute(x, y) {
     }
     return 0;
 }
-
+function lookupChessLetter(position){
+    var file = position%8;
+    var rank = Math.floor(position/8);
+    var files = ["a", "b", "c", "d", "e", "f", "g", "h"];
+    var ranks = [8,7,6,5,4,3,2,1];
+    return `${files[file]}${ranks[rank]}`;
+}
 function render() {
     xCord = 0; //parseInt(document.getElementById("xport").value);
     yCord = 0; //parseInt(document.getElementById("yport").value);
@@ -437,7 +443,7 @@ function render() {
         n.className = "";
         var f = size % 2 == 0? Math.floor(i/size) : 0;
         n.classList.add((f + i + xCord) % 2 == 0? "white_square" : "black_square");
-        n.innerHTML = "";
+        n.innerHTML = `<b>REPLACE2</b><p style="margin:0px;text-align:right">${lookupChessLetter(i)}</p>`;
         if (toMove) {
             var x = parseInt(n['data-x']) + xCord;
             var y = parseInt(n['data-y']) + yCord;
@@ -457,9 +463,13 @@ function render() {
             var n = document.getElementById(cell_prefix + d);
             n.classList.add(piece.type);
             if (piece.color == "white") {
-                n.innerHTML = "<b>" + compute(piece.x, piece.y) + "</b>";
+                n.innerHTML = n.innerHTML.replace("REPLACE2",compute(piece.x, piece.y));
             }
         }
+    }
+    for (var i = 0; i < size*size; i++) {
+        var n = document.getElementById(cell_prefix + i);
+        n.innerHTML = n.innerHTML.replace("REPLACE2","&nbsp");
     }
 }
 
