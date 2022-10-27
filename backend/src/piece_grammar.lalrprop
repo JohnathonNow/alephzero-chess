@@ -1,0 +1,14 @@
+use crate::regexparser::ast::*;
+
+grammar;
+
+pub Location: Box<Location> = {
+    <r:RLocation> => r,
+    "^" <r:RLocation> => Box::new(Location::Not(r)),
+    <l:Location> "||" <r:RLocation>  => Box::new(Location::Or(l, r)),
+    <l:Location> "&&" <r:RLocation>  => Box::new(Location::And(l ,r)),
+};
+
+RLocation: Box<Location> = {
+    "(" <c:Location> ")" => c,
+};
