@@ -2,13 +2,17 @@ use std::str::FromStr;
 use std::sync::Arc;
 #[cfg(feature = "server")]
 use async_std::sync::{Mutex, Condvar};
-use std::time::Duration;
 mod error;
 #[cfg(feature = "server")]
 use actix_web::{get, HttpResponse};
 #[cfg(feature = "server")]
 use actix_web::{web, App, HttpServer};
 use num_bigint::BigInt;
+use serde::{Deserialize, Serialize};
+use jsonwebtoken::{decode, encode, Header, Validation, EncodingKey, DecodingKey, TokenData, Algorithm};
+use std::time::{Duration, SystemTime};
+
+
 mod ai;
 mod board;
 mod board_serializer;
@@ -233,6 +237,30 @@ pub async fn get_move(
 }
 
 
+#[derive(Debug, Serialize, Deserialize)]
+struct Claims {
+    game_id: String,
+    exp: usize,
+}
+
+fn generate_jwt(game_id: String) -> String {
+    // Set the claims for the JWT, including the game id and an expiration time
+    let claims = Claims {
+        game_id,
+        exp: (SystemTime::now() + Duration::from_secs(3600)).duration_since(SystemTime::UNIX_EPOCH)
+            .unwrap()
+            .as_secs() as usize,
+    };
+
+    // Generate the JWT with the claims and a secret key
+    encode(&Header::default(), &claims, &EncodingKey::from_secret("secretsecret".as_ref())).unwrap()
+}
+
+fn authenticate_jwt(jwt: &str) -> Result<TokenData<Claims>, jsonwebtoken::errors::Error> {
+    // Decode and validate the JWT using the secret key
+    decode::<Claims>(jwt, &DecodingKey::from_secret("secretsecret".as_ref()), &Validation::new(Algorithm::HS256))
+}
+
 #[get("/promote/{px}/{py}/{p}")]
 pub async fn get_promote(
     shared: Shared,
@@ -250,4 +278,14 @@ pub async fn get_promote(
     Ok(HttpResponse::Ok()
         .content_type("application/json")
         .body("swag"))
+}
+#[cfg(feature = "server")]
+#[test]
+fn test_jwt() {
+    // Generate a JWT with a game id of "abc123"
+    let jwt = generate_jwt("abc123".to_string());
+
+    // Authenticate the JWT and retrieve the claims
+    let claims = authenticate_jwt(&jwt).unwrap().claims;
+    assert_eq!("abc123", claims.game_id);
 }

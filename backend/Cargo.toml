@@ -16,6 +16,7 @@ name = "server"
 
 [dependencies]
 num-bigint = "0.4.0"
+jsonwebtoken = "8.2.0"
 rand = { version = "0.8.5" }
 getrandom = { version = "0.2", features = ["js"] }
 actix-web = { version = "3", optional = true }
