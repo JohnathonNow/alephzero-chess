@@ -35,7 +35,7 @@ use actix_files as fs;
 #[cfg(feature = "server")]
 use async_std::task;
 
-type SharedData = (Mutex<Board>, Condvar);
+type SharedData = (Vec<Mutex<Board>>, Condvar);
 type Shared = web::Data<SharedData>;
 
 #[cfg(feature = "server")]
@@ -138,7 +138,7 @@ async fn main() -> std::io::Result<()> {
         7.into(),
         7.into(),
     ));
-    let board: Shared = web::Data::new((Mutex::new(b), Condvar::new()));
+    let board: Shared = web::Data::new((vec![Mutex::new(b)], Condvar::new()));
     HttpServer::new(move || {
         App::new()
             .service(get)
@@ -159,7 +159,7 @@ async fn main() -> std::io::Result<()> {
 #[get("/board")]
 pub async fn get(shared: Shared) -> Result<HttpResponse, Error> {
     let (board, cvar) = &**shared;
-    let b = board.lock().await;
+    let b = board[0].lock().await;
     Ok(HttpResponse::Ok()
         .content_type("application/json")
         .body(board_serialize(&b)))
@@ -169,7 +169,7 @@ pub async fn get(shared: Shared) -> Result<HttpResponse, Error> {
 pub async fn get_version(shared: Shared, web::Path((version)): web::Path<(String)>) -> Result<HttpResponse, Error> {
     let (board, cvar) = &**shared;
     let version2 = version.parse::<BigInt>().map_err(|_| Error::new())?;
-    let mut b = board.lock().await;
+    let mut b = board[0].lock().await;
     while  b.turn < version2 {
        b = cvar.wait(b).await;
     }
@@ -191,7 +191,7 @@ pub async fn get_legal(
     let bigwy = BigInt::from_str(&wy).map_err(|_| Error::new())?;
     let bigzoom = BigInt::from_str(&zoom).map_err(|_| Error::new())?;
 
-    let mut b = board.lock().await;
+    let mut b = board[0].lock().await;
 
     let mut xx = bigwx.clone();
     let wwx = bigwx + bigzoom.clone();
@@ -224,7 +224,7 @@ pub async fn get_move(
     let bigdx = BigInt::from_str(&dx).map_err(|_| Error::new())?;
     let bigdy = BigInt::from_str(&dy).map_err(|_| Error::new())?;
 
-    let mut b = board.lock().await;
+    let mut b = board[0].lock().await;
 
     if let Some(m) = Board::move_legal(&mut b, &rules, &bigpx, &bigpy, &bigdx, &bigdy) {
         b.do_move(m);
@@ -271,7 +271,7 @@ pub async fn get_promote(
     let bigpx = BigInt::from_str(&px).map_err(|_| Error::new())?;
     let bigpy = BigInt::from_str(&py).map_err(|_| Error::new())?;
 
-    let mut b = board.lock().await;
+    let mut b = board[0].lock().await;
 
     b.promote(&bigpx, &bigpy, p);
     cvar.notify_all();
