@@ -442,6 +442,21 @@ fn test_en_passant() {
     assert!(is_pawn_move_legal(&mut b, 2, &5.into(), &3.into()).is_some())
 }
 
+#[test]
+fn test_in_check() {
+    let mut b = Board::new();
+    let pm = StandardChess::new();
+    b.place_piece(
+        pm.build_piece(&"king".into(), Color::White, 0.into(), 2.into())
+            .unwrap(),
+    );
+    b.place_piece(
+        pm.build_piece(&"rook".into(), Color::Black, 0.into(), 4.into())
+            .unwrap(),
+    );
+    assert!(pm.is_in_check(&mut b, Color::White));
+}
+
 impl PieceRules for StandardChess {
     fn can_move(&self, board: &mut Board, i: usize, to_rank: &BigInt, to_file: &BigInt) -> Option<Move> {
         let piece = board.pieces.get(i).unwrap();
