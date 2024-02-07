@@ -1,4 +1,4 @@
-import init, { WasmBoard } from "/pkg/backend.js";
+import init, { WasmBoard } from "pkg/backend.js";
 
 
 var xCord = 0;
